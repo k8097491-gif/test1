@@ -1,0 +1,1317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f3d21a">
+<meta name="description" content="A self-contained university IT helpdesk demonstration covering the complete ticket lifecycle.">
+<title>University IT Support — Helpdesk demo</title>
+<style>
+:root {
+  color-scheme: light;
+  /* Campus wayfinding palette: signal yellow routes work, ink anchors the signs. */
+  --paper: #eff1ec;
+  --paper-deep: #111a1d;
+  --sheet: #ffffff;
+  --sheet-alt: #fff7cf;
+  --ink: #111a1d;
+  --ink-soft: #29383b;
+  --muted: #4a595c;
+  --line: #c8d0d0;
+  --line-strong: #7d898b;
+  --vermilion: #f3d21a;
+  --vermilion-deep: #10191c;
+  --vermilion-wash: #fff7cf;
+  --olive: #176044;
+  --olive-wash: #e2efe8;
+  --gold: #805300;
+  --gold-wash: #fff0c7;
+  --blue: #075b82;
+  --blue-wash: #e4f2f8;
+  --danger: #a02d26;
+  --focus: #005d9e;
+  --sans: "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
+  --serif: Georgia, "Times New Roman", serif;
+  --measure: 72ch;
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+}
+* { box-sizing: border-box; }
+html { min-height: 100%; background: var(--paper); scrollbar-color: var(--line-strong) var(--paper); scrollbar-width: thin; }
+body { margin: 0; min-width: 320px; min-height: 100dvh; background: var(--paper); color: var(--ink); font: 14px/1.5 var(--sans); font-variant-numeric: tabular-nums; }
+::selection { background: #e1b8aa; color: #241e1a; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+svg { display: block; }
+.icon { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.app-shell { min-height: 100dvh; display: grid; grid-template-columns: 224px minmax(0,1fr); }
+.sidebar { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; padding: 24px 16px 16px; background: var(--paper-deep); border-right: 1px solid var(--line); }
+.brand { display: flex; gap: 11px; align-items: center; min-height: 44px; padding: 0 8px 22px; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+.brand-mark { display: grid; place-items: center; width: 34px; height: 34px; color: var(--vermilion); border: 1px solid var(--line-strong); }
+.brand-name { font: 600 14px/1.25 var(--serif); letter-spacing: -.01em; }
+.brand-name span { display: block; font: 11px/1.4 var(--sans); color: var(--muted); letter-spacing: .07em; text-transform: uppercase; }
+.demo-note { margin: 18px 8px 20px; padding: 10px 0; color: var(--muted); font-size: 12px; line-height: 1.5; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.demo-note strong { display: block; margin-bottom: 2px; color: var(--ink-soft); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.side-label { padding: 0 8px; margin: 0 0 7px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+.side-nav { display: grid; gap: 3px; }
+.nav-item { display: flex; align-items: center; width: 100%; min-height: 39px; padding: 8px 10px; gap: 10px; text-align: left; border: 1px solid transparent; background: transparent; color: var(--ink-soft); }
+.nav-item:hover { background: rgb(255 255 255 / .35); color: var(--ink); }
+.nav-item[aria-current="page"] { color: var(--ink); background: var(--sheet); border-color: var(--line); }
+.nav-item[aria-current="page"] .icon { color: var(--vermilion); }
+.nav-count { margin-left: auto; color: var(--muted); font-size: 12px; }
+.sidebar-bottom { margin-top: auto; border-top: 1px solid var(--line); padding-top: 13px; }
+.profile { display: flex; gap: 10px; align-items: center; padding: 6px 7px 12px; }
+.avatar { display: inline-grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border: 1px solid var(--line-strong); background: var(--sheet); color: var(--ink-soft); font: 600 12px var(--sans); }
+.profile-name { display: block; font-size: 12px; font-weight: 650; }
+.profile-role { display: block; color: var(--muted); font-size: 12px; }
+.reset-link { width: 100%; padding: 7px; border: 0; background: transparent; color: var(--muted); text-align: left; font-size: 12px; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
+.reset-link:hover { color: var(--danger); text-decoration-color: currentColor; }
+.main-shell { min-width: 0; }
+.topbar { min-height: 64px; padding: 0 34px; display: flex; align-items: center; justify-content: space-between; gap: 18px; background: var(--sheet); border-bottom: 1px solid var(--line); }
+.workspace-name { font: 600 13px var(--serif); }
+.workspace-hint { margin-left: 9px; color: var(--muted); font-size: 12px; }
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.role-select-wrap { position: relative; }
+.role-select-wrap::after { content: ""; position: absolute; right: 10px; top: 50%; width: 6px; height: 6px; border-right: 1px solid var(--ink-soft); border-bottom: 1px solid var(--ink-soft); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+select, input[type="text"], input[type="search"], input[type="email"], input[type="date"], textarea { width: 100%; min-height: 39px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 2px; background: var(--sheet); }
+select { appearance: none; padding-right: 30px; }
+textarea { min-height: 88px; resize: vertical; line-height: 1.5; }
+input::placeholder, textarea::placeholder { color: #666e66; opacity: 1; }
+.role-select { width: 190px; min-height: 36px; padding: 7px 30px 7px 10px; font-size: 12px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 2px; background: var(--sheet); color: var(--ink); font-weight: 600; font-size: 12px; text-decoration: none; transition: background-color .16s ease, border-color .16s ease, color .16s ease; }
+.btn:hover { background: #fffdf7; border-color: var(--ink-soft); }
+.btn-primary { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
+.btn-primary:hover { background: #394038; border-color: #394038; }
+.btn-accent { background: var(--vermilion); border-color: var(--vermilion); color: var(--ink); }
+.btn-accent:hover { background: var(--vermilion-deep); border-color: var(--vermilion-deep); }
+.btn-quiet { background: transparent; border-color: transparent; }
+.btn-quiet:hover { background: var(--sheet-alt); border-color: var(--line); }
+.btn-danger { color: var(--danger); border-color: #bb8175; background: transparent; }
+.btn-danger:hover { color: #fff; background: var(--danger); border-color: var(--danger); }
+.icon-button { position: relative; display: inline-grid; place-items: center; width: 38px; height: 38px; border: 1px solid transparent; background: transparent; color: var(--ink-soft); }
+.icon-button:hover, .icon-button[aria-expanded="true"] { background: var(--sheet-alt); border-color: var(--line); }
+.unread-dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; background: var(--vermilion); border: 1px solid var(--sheet); border-radius: 50%; }
+main#mainContent { max-width: 1600px; margin: 0 auto; padding: 34px 34px 56px; }
+.page-head { display: flex; justify-content: space-between; align-items: end; gap: 18px; padding-bottom: 22px; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: 6px; font: 400 clamp(28px,3vw,38px)/1.15 var(--serif); letter-spacing: -.025em; }
+.page-description { max-width: var(--measure); margin: 0; color: var(--ink-soft); font-size: 13px; }
+.page-head-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: end; gap: 12px; color: var(--muted); font-size: 12px; }
+.demo-label { display: inline-flex; align-items: center; gap: 7px; padding: 5px 8px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.demo-label::before { content: ""; width: 6px; height: 6px; background: var(--olive); border-radius: 50%; }
+.service-line { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; padding: 11px 0; margin-bottom: 16px; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line); color: var(--ink-soft); font-size: 12px; }
+.service-line strong { color: var(--ink); font-weight: 700; }
+.service-item { display: inline-flex; align-items: center; gap: 7px; }
+.service-item::before { content: ""; width: 7px; height: 7px; border: 1px solid currentColor; border-radius: 50%; }
+.service-item.is-risk::before { border-color: var(--vermilion); background: var(--vermilion); }
+.service-item.is-waiting::before { border-color: var(--gold); background: var(--gold-wash); }
+.workbench { display: grid; grid-template-columns: minmax(300px,.82fr) minmax(480px,1.18fr); border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); background: var(--sheet); }
+.queue-panel { min-width: 0; border-right: 1px solid var(--line); }
+.queue-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 15px 16px 9px; }
+.queue-heading h2 { margin: 0; font: 600 17px/1.3 var(--serif); }
+.queue-total { color: var(--muted); font-size: 12px; }
+.queue-filters { display: grid; grid-template-columns: minmax(150px,1fr) 130px; gap: 8px; padding: 7px 16px 12px; }
+.search-wrap { position: relative; }
+.search-wrap .icon { position: absolute; left: 10px; top: 10px; width: 16px; height: 16px; color: var(--muted); }
+.search-wrap input { padding-left: 34px; min-height: 36px; font-size: 12px; }
+.filter-select { min-height: 36px; font-size: 12px; }
+.filter-more { grid-column: 1/-1; display: flex; gap: 8px; }
+.filter-more select { flex: 1 1 0; min-width: 0; min-height: 34px; padding-top: 6px; padding-bottom: 6px; font-size: 12px; }
+.ticket-list { max-height: 710px; overflow: auto; scrollbar-color: var(--line-strong) var(--sheet); scrollbar-width: thin; }
+.ticket-row { display: block; width: 100%; padding: 13px 16px 12px; border: 0; border-top: 1px solid var(--line); background: transparent; text-align: left; }
+.ticket-row:hover { background: #f4f0e7; }
+.ticket-row[aria-current="true"] { background: var(--sheet-alt); }
+.row-top, .row-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.row-id { color: var(--muted); font-size: 11px; font-weight: 650; letter-spacing: .035em; }
+.priority-mark { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.priority-mark::before { content: ""; width: 7px; height: 7px; border: 1px solid currentColor; border-radius: 50%; }
+.priority-mark[data-priority="Critical"] { color: var(--danger); }
+.priority-mark[data-priority="Critical"]::before, .priority-mark[data-priority="High"]::before { background: currentColor; }
+.priority-mark[data-priority="High"] { color: #99502c; }
+.priority-mark[data-priority="Normal"] { color: var(--blue); }
+.priority-mark[data-priority="Low"] { color: var(--olive); }
+.row-title { display: block; margin: 5px 0 8px; font: 600 14px/1.35 var(--serif); }
+.row-bottom { justify-content: flex-start; flex-wrap: wrap; }
+.status-mark { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .045em; text-transform: uppercase; }
+.status-mark::before { content: ""; width: 6px; height: 6px; border: 1px solid currentColor; }
+.status-mark[data-status="New"]::before, .status-mark[data-status="Escalated"]::before { background: var(--vermilion); border-color: var(--vermilion); }
+.status-mark[data-status="Waiting"]::before { background: var(--gold-wash); border-color: var(--gold); }
+.status-mark[data-status="In progress"]::before, .status-mark[data-status="Reopened"]::before { background: var(--blue-wash); border-color: var(--blue); }
+.status-mark[data-status="Resolved"]::before, .status-mark[data-status="Closed"]::before { background: var(--olive-wash); border-color: var(--olive); }
+.row-person { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.row-deadline { margin-left: auto; color: var(--muted); font-size: 11px; white-space: nowrap; }
+.row-deadline.is-late { color: var(--danger); font-weight: 700; }
+.empty-queue { padding: 32px 18px; color: var(--muted); text-align: center; }
+.empty-queue strong { display: block; margin-bottom: 4px; color: var(--ink); font: 600 17px var(--serif); }
+.detail-panel { min-width: 0; padding: 20px 24px 26px; }
+.detail-empty { min-height: 300px; display: grid; place-content: center; text-align: center; color: var(--muted); }
+.detail-empty h2 { margin-bottom: 4px; color: var(--ink); font: 600 21px var(--serif); }
+.detail-topline { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.record-id { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-bottom: 7px; color: var(--muted); font-size: 11px; letter-spacing: .045em; }
+.record-id .status-mark { font-size: 11px; }
+.detail-title { margin: 0 0 7px; font: 400 clamp(22px,2.2vw,29px)/1.2 var(--serif); letter-spacing: -.02em; }
+.detail-summary { max-width: 68ch; margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.6; }
+.detail-id-actions { display: flex; gap: 3px; }
+.detail-id-actions .icon-button { width: 32px; height: 32px; }
+.phase-wrap { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: center; margin: 18px 0 20px; padding: 13px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.phase-title { margin: 0 0 8px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.phase-rail { --step: 0; position: relative; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 2px; padding-top: 13px; }
+.phase-rail::before { content: ""; position: absolute; top: 4px; left: 0; right: 0; height: 1px; background: var(--line-strong); }
+.phase-rail::after { content: ""; position: absolute; top: 0; left: calc((100% - 6px) * var(--step) / 4); width: 9px; height: 9px; background: var(--vermilion); border: 1px solid var(--sheet); outline: 1px solid var(--vermilion); transition: left .5s cubic-bezier(.16,1,.3,1); }
+.phase-step { color: var(--muted); font-size: 11px; line-height: 1.3; }
+.phase-step.is-past, .phase-step.is-current { color: var(--ink); font-weight: 700; }
+.phase-aside { min-width: 130px; text-align: right; }
+.phase-aside strong { display: block; font: 600 13px var(--serif); }
+.phase-aside span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+.field-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px 18px; margin: 0; padding: 0 0 18px; border-bottom: 1px solid var(--line); }
+.field-grid div { min-width: 0; }
+.field-grid dt { margin-bottom: 3px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.field-grid dd { overflow-wrap: anywhere; margin: 0; color: var(--ink); font-size: 12px; font-weight: 600; }
+.sla-value.is-late { color: var(--danger); }
+.journal-section { padding-top: 17px; }
+.section-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+.section-title-row h3 { margin: 0; font: 600 17px var(--serif); }
+.section-title-row span { color: var(--muted); font-size: 11px; }
+.timeline { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.timeline-item { position: relative; display: grid; grid-template-columns: 23px minmax(0,1fr); gap: 10px; padding: 0 0 14px; }
+.timeline-item:not(:last-child)::before { content: ""; position: absolute; top: 16px; bottom: 0; left: 7px; width: 1px; background: var(--line); }
+.timeline-mark { position: relative; z-index: 1; width: 15px; height: 15px; margin-top: 1px; display: grid; place-items: center; background: var(--sheet); border: 1px solid var(--line-strong); color: var(--muted); }
+.timeline-mark .icon { width: 9px; height: 9px; }
+.timeline-item.is-comment .timeline-mark { border-color: var(--blue); color: var(--blue); }
+.timeline-item.is-internal .timeline-mark { border-color: var(--gold); color: var(--gold); }
+.timeline-item.is-escalation .timeline-mark { border-color: var(--vermilion); color: var(--vermilion); }
+.timeline-content { min-width: 0; }
+.timeline-heading { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.timeline-heading strong { font-size: 12px; font-weight: 700; }
+.timeline-heading time { color: var(--muted); font-size: 11px; }
+.timeline-kind { color: var(--muted); font-size: 11px; letter-spacing: .035em; text-transform: uppercase; }
+.timeline-body { max-width: 68ch; margin: 3px 0 0; color: var(--ink-soft); font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+.internal-label { display: inline-block; margin-left: 5px; padding: 1px 4px; border: 1px solid #d1bc87; color: #634b1c; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.action-section { margin-top: 6px; padding-top: 16px; border-top: 1px solid var(--line-strong); }
+.action-section h3 { margin: 0 0 10px; font: 600 16px var(--serif); }
+.action-hint { margin: -4px 0 12px; color: var(--muted); font-size: 12px; }
+.form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.form-field { display: grid; gap: 5px; min-width: 0; }
+.form-field.full { grid-column: 1/-1; }
+.form-field label, .form-label { color: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .035em; }
+.form-field input, .form-field select, .form-field textarea { font-size: 12px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.action-divider { margin: 16px 0; border: 0; border-top: 1px solid var(--line); }
+.comment-box { display: grid; gap: 9px; }
+.comment-options { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; }
+.inline-choice { display: flex; flex-wrap: wrap; gap: 12px; color: var(--ink-soft); font-size: 12px; }
+.inline-choice label { display: inline-flex; align-items: center; gap: 5px; }
+input[type="radio"], input[type="checkbox"] { accent-color: var(--vermilion); }
+.assignment-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; }
+.confirmation { margin: 12px 0 0; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.confirmation p { max-width: 62ch; margin: 0 0 10px; color: var(--ink-soft); font-size: 12px; }
+.rating-form { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; margin-top: 12px; }
+.rating-scale { display: flex; gap: 5px; }
+.rating-scale label { position: relative; display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line-strong); background: var(--sheet); color: var(--ink); font-size: 12px; font-weight: 700; cursor: pointer; }
+.rating-scale input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.rating-scale label:has(input:checked) { border-color: var(--vermilion); background: var(--vermilion-wash); color: var(--vermilion-deep); }
+.rating-scale label:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.page-form, .report-surface, .knowledge-layout, .settings-layout { background: var(--sheet); border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+.page-form { max-width: 940px; padding: 22px 24px 28px; }
+.form-intro { max-width: 68ch; margin-bottom: 22px; color: var(--ink-soft); font-size: 12px; }
+.form-intro strong { color: var(--ink); }
+.page-form .form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 17px 20px; }
+.page-form .form-field input, .page-form .form-field select { min-height: 42px; }
+fieldset.form-field { min-width: 0; margin: 0; padding: 0; border: 0; }
+fieldset.form-field legend { margin-bottom: 6px; color: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .035em; }
+.choice-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice-row label { display: flex; align-items: flex-start; gap: 7px; padding: 8px 10px; border: 1px solid var(--line); background: var(--sheet-alt); color: var(--ink-soft); font-size: 12px; cursor: pointer; }
+.choice-row label:has(input:checked) { border-color: var(--vermilion); color: var(--ink); background: var(--vermilion-wash); }
+.priority-preview { grid-column: 1/-1; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--ink-soft); font-size: 12px; }
+.priority-preview strong { color: var(--ink); }
+.file-input { display: block; width: 100%; padding: 8px; border: 1px dashed var(--line-strong); background: var(--sheet-alt); color: var(--ink-soft); font-size: 12px; }
+.file-note { color: var(--muted); font-size: 11px; }
+.form-error { margin: 0 0 10px; padding: 8px 10px; border: 1px solid #c39084; background: var(--vermilion-wash); color: var(--danger); font-size: 12px; }
+.report-surface { padding: 20px 22px 24px; }
+.report-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: baseline; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+.report-head h2 { margin: 0; font: 600 19px var(--serif); }
+.report-head p { margin: 0; color: var(--muted); font-size: 11px; }
+.report-strip { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); margin: 0 0 22px; border-bottom: 1px solid var(--line); }
+.report-stat { padding: 14px 13px 14px 0; }
+.report-stat + .report-stat { padding-left: 15px; border-left: 1px solid var(--line); }
+.report-stat dt { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.report-stat dd { margin: 2px 0 0; font: 400 23px/1.25 var(--serif); }
+.report-stat small { display: block; color: var(--muted); font: 11px var(--sans); }
+.report-columns { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(260px,.9fr); gap: 30px; }
+.report-columns h3, .knowledge-article h3, .settings-section h3 { margin: 0 0 11px; font: 600 17px var(--serif); }
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th { padding: 8px 10px 8px 0; color: var(--muted); font-size: 11px; letter-spacing: .06em; text-align: left; text-transform: uppercase; border-bottom: 1px solid var(--line-strong); }
+.data-table td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.data-table th:not(:first-child), .data-table td:not(:first-child) { text-align: right; }
+.data-table td:first-child { color: var(--ink); font-weight: 600; }
+.bar-list { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 75px minmax(0,1fr) 28px; gap: 8px; align-items: center; color: var(--ink-soft); font-size: 11px; }
+.bar-track { height: 7px; background: var(--paper-deep); }
+.bar-fill { height: 100%; background: var(--olive); }
+.bar-row:nth-child(2) .bar-fill { background: var(--blue); }
+.bar-row:nth-child(3) .bar-fill { background: #9a7a38; }
+.bar-row:nth-child(4) .bar-fill { background: #ae7352; }
+.late-list { margin: 22px 0 0; padding: 15px 0 0; border-top: 1px solid var(--line); }
+.late-list h3 { margin-bottom: 8px; }
+.late-list ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.late-list button { width: 100%; display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; font-size: 11px; }
+.late-list button:hover { color: var(--vermilion-deep); }
+.late-list time { color: var(--danger); white-space: nowrap; }
+.knowledge-layout { display: grid; grid-template-columns: minmax(220px,.55fr) minmax(0,1.45fr); min-height: 450px; }
+.knowledge-index { padding: 18px; border-right: 1px solid var(--line); }
+.knowledge-index h2 { margin: 0 0 10px; font: 600 17px var(--serif); }
+.knowledge-index input { min-height: 36px; margin-bottom: 10px; font-size: 12px; }
+.article-link { display: block; width: 100%; padding: 10px 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink-soft); text-align: left; font-size: 12px; }
+.article-link:hover, .article-link[aria-current="true"] { color: var(--vermilion-deep); }
+.knowledge-article { padding: 24px 28px; }
+.knowledge-article h2 { margin: 0 0 7px; font: 400 26px/1.2 var(--serif); }
+.knowledge-article .article-meta { margin-bottom: 20px; color: var(--muted); font-size: 11px; }
+.knowledge-article p, .knowledge-article li { max-width: 70ch; color: var(--ink-soft); font-size: 12px; }
+.knowledge-article ol { padding-left: 19px; }
+.knowledge-article li { padding: 3px 0; }
+.article-feedback { display: flex; gap: 8px; align-items: center; padding-top: 15px; margin-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.settings-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 22px; }
+.settings-section + .settings-section { padding-left: 24px; border-left: 1px solid var(--line); }
+.settings-section p { max-width: 56ch; color: var(--muted); font-size: 12px; }
+.category-list { display: grid; margin: 12px 0 16px; padding: 0; list-style: none; }
+.category-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 12px; }
+.category-row small { color: var(--muted); }
+.mini-form { display: flex; gap: 8px; align-items: end; }
+.mini-form .form-field { flex: 1; }
+.preference-line { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); font-size: 12px; }
+.preference-line strong { display: block; font-size: 12px; }
+.preference-line span { color: var(--muted); font-size: 11px; }
+.notification-popover { position: fixed; z-index: 20; top: 58px; right: 260px; width: min(360px,calc(100vw - 24px)); padding: 15px 16px 10px; background: var(--sheet); border: 1px solid var(--line-strong);  }
+.notification-head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.notification-head h2 { margin: 0; font: 600 17px var(--serif); }
+.notification-head button { border: 0; padding: 4px; background: transparent; color: var(--muted); font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.notification-list { display: grid; }
+.notification-item { display: block; width: 100%; padding: 10px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
+.notification-item:hover { color: var(--vermilion-deep); }
+.notification-item strong { display: block; font-size: 12px; }
+.notification-item span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+.notification-empty { padding: 18px 0; color: var(--muted); font-size: 12px; }
+.toast-region { position: fixed; z-index: 30; right: 22px; bottom: 20px; display: grid; gap: 8px; width: min(380px,calc(100vw - 32px)); }
+.toast { padding: 11px 14px; border: 1px solid var(--line-strong); background: var(--ink); color: #fffdf7; font-size: 12px; box-shadow: 0 7px 22px rgb(20 24 20 / .18); }
+.toast.is-error { background: var(--danger); border-color: var(--danger); }
+.mobile-back { display: none; }
+@media (max-width: 1180px) {
+  .app-shell { grid-template-columns: 205px minmax(0,1fr); }
+  .topbar, main#mainContent { padding-left: 24px; padding-right: 24px; }
+  .workbench { grid-template-columns: minmax(280px,.8fr) minmax(420px,1.2fr); }
+  .detail-panel { padding: 18px; }
+}
+@media (max-width: 980px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; width: 100%; height: auto; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; padding: 10px 18px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .brand { min-height: auto; padding: 0; border: 0; }
+  .brand-mark { width: 31px; height: 31px; }
+  .demo-note, .side-label, .sidebar-bottom { display: none; }
+  .side-nav { display: flex; gap: 3px; overflow-x: auto; scrollbar-width: thin; }
+  .nav-item { flex: 0 0 auto; width: auto; min-height: 34px; padding: 6px 8px; font-size: 12px; }
+  .nav-item .icon { width: 15px; height: 15px; }
+  .nav-count { margin-left: 1px; }
+  .topbar { min-height: 58px; }
+  .notification-popover { top: 54px; right: 20px; }
+}
+@media (max-width: 760px) {
+  main#mainContent { padding: 25px 18px 44px; }
+  .topbar { padding: 0 18px; }
+  .workspace-hint { display: none; }
+  .role-select { width: 155px; font-size: 12px; }
+  .top-actions { gap: 4px; }
+  .top-actions > .btn { min-height: 35px; padding: 7px 9px; font-size: 12px; }
+  .workbench { display: block; }
+  .queue-panel { border-right: 0; }
+  .detail-panel { display: none; padding: 18px 16px 24px; border-top: 1px solid var(--line-strong); }
+  .workbench.is-detail .queue-panel { display: none; }
+  .workbench.is-detail .detail-panel { display: block; }
+  .mobile-back { display: inline-flex; margin: 0 0 12px; padding: 4px 0; border: 0; background: transparent; color: var(--ink-soft); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+  .queue-filters { grid-template-columns: minmax(120px,1fr) 125px; padding-left: 12px; padding-right: 12px; }
+  .queue-heading { padding-left: 12px; padding-right: 12px; }
+  .ticket-row { padding-left: 12px; padding-right: 12px; }
+  .ticket-list { max-height: none; }
+  .page-head { align-items: flex-start; flex-direction: column; gap: 10px; padding-bottom: 17px; }
+  .page-head-meta { justify-content: flex-start; }
+  .phase-wrap { grid-template-columns: 1fr; gap: 9px; }
+  .phase-aside { text-align: left; }
+  .field-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+  .assignment-row { grid-template-columns: 1fr 1fr; }
+  .assignment-row .btn { grid-column: 1/-1; }
+  .report-columns { grid-template-columns: 1fr; gap: 25px; }
+  .report-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .report-stat:nth-child(3) { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  .report-stat:nth-child(4) { border-top: 1px solid var(--line); }
+  .knowledge-layout { grid-template-columns: 1fr; }
+  .knowledge-index { border-right: 0; border-bottom: 1px solid var(--line); }
+  .knowledge-index nav { display: flex; gap: 10px; overflow-x: auto; }
+  .article-link { flex: 0 0 190px; border-bottom: 1px solid var(--line); }
+  .knowledge-article { padding: 20px 18px; }
+  .settings-layout { grid-template-columns: 1fr; gap: 25px; padding: 18px; }
+  .settings-section + .settings-section { padding: 20px 0 0; border-top: 1px solid var(--line); border-left: 0; }
+}
+@media (max-width: 500px) {
+  .sidebar { grid-template-columns: 1fr; gap: 5px; padding: 8px 12px 5px; }
+  .brand { padding-bottom: 6px; }
+  .brand-name { font-size: 13px; }
+  .side-nav { grid-row: 2; margin: 0 -12px; padding: 0 8px 4px; }
+  .nav-item { font-size: 11px; }
+  .nav-item .icon { display: none; }
+  .topbar { min-height: 54px; padding: 0 12px; gap: 7px; }
+  .workspace-name { font-size: 12px; }
+  .role-select { width: 130px; min-height: 34px; font-size: 11px; }
+  .top-actions { gap: 1px; }
+  .top-actions > .btn { min-height: 33px; padding: 6px 7px; font-size: 11px; }
+  .top-actions > .btn .icon { width: 15px; height: 15px; }
+  .icon-button { width: 33px; height: 33px; }
+  main#mainContent { padding: 20px 12px 34px; }
+  h1 { font-size: 29px; }
+  .service-line { gap: 11px; }
+  .queue-filters { grid-template-columns: 1fr; }
+  .filter-more { grid-column: 1; }
+  .detail-topline { gap: 8px; }
+  .detail-id-actions { margin-top: -7px; }
+  .detail-title { max-width: 25ch; font-size: 24px; }
+  .field-grid { gap: 10px; }
+  .form-grid, .page-form .form-grid { grid-template-columns: 1fr; }
+  .form-field.full, .priority-preview { grid-column: auto; }
+  .assignment-row { grid-template-columns: 1fr; }
+  .assignment-row .btn { grid-column: auto; }
+  .page-form { padding: 18px 14px 22px; }
+  .report-surface { padding: 16px 13px 20px; }
+  .data-table { font-size: 11px; }
+  .data-table th, .data-table td { padding-right: 6px; }
+  .notification-popover { top: 50px; right: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+/* Campus wayfinding system */
+html { background: var(--paper); scrollbar-color: var(--line-strong) var(--paper); }
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); }
+::selection { background: var(--vermilion); color: var(--ink); }
+:focus-visible { outline-color: var(--focus); }
+.app-shell { grid-template-columns: 236px minmax(0,1fr); background: var(--paper); }
+.sidebar { background: var(--paper-deep); color: #fff; border: 0; padding: 22px 15px 15px; }
+.brand { color: #fff; border-bottom: 1px solid #526064; padding: 0 7px 20px; }
+.brand-mark { width: 38px; height: 38px; border: 0; background: var(--vermilion); color: var(--ink); }
+.brand-mark .icon { width: 21px; height: 21px; stroke-width: 2; }
+.brand-name { color: #fff; font: 750 15px/1.2 var(--sans); letter-spacing: -.025em; }
+.brand-name span { margin-top: 3px; color: #f3d21a; font: 700 11px/1.4 var(--sans); letter-spacing: .11em; }
+.demo-note { margin: 16px 4px 22px; padding: 10px 11px; background: #202c30; color: #e4ebea; border: 0; font-size: 12px; }
+.demo-note strong { color: #f3d21a; font-size: 11px; letter-spacing: .1em; }
+.side-label { color: #c2cdcc; padding: 0 8px; letter-spacing: .13em; }
+.side-nav { gap: 4px; }
+.nav-item { min-height: 42px; border: 0; color: #e2e9e8; font-weight: 650; }
+.nav-item:hover { background: #283639; color: #fff; }
+.nav-item[aria-current="page"] { background: var(--vermilion); color: var(--ink); border: 0; }
+.nav-item[aria-current="page"] .icon { color: var(--ink); }
+.nav-count { color: inherit; opacity: .78; font-variant-numeric: tabular-nums; }
+.sidebar-bottom { border-top: 1px solid #526064; }
+.profile-name { color: #fff; }
+.profile-role { color: #c2cdcc; }
+.avatar { color: var(--ink); background: var(--vermilion); border: 0; font-weight: 750; }
+.reset-link { color: #d2dcda; }
+.reset-link:hover { color: #f3d21a; }
+.topbar { min-height: 66px; padding: 0 32px; background: var(--vermilion); color: var(--ink); border-bottom: 4px solid var(--ink); }
+.workspace-name { font: 800 13px/1.3 var(--sans); letter-spacing: .09em; }
+.workspace-hint { color: #29383b; font-size: 12px; }
+.top-actions { gap: 9px; }
+.role-select-wrap::after { border-color: var(--ink); }
+select, input[type="text"], input[type="search"], input[type="email"], input[type="date"], textarea { min-height: 40px; border: 1px solid var(--line-strong); border-radius: 0; background: #fff; color: var(--ink); }
+select { appearance: none; }
+input::placeholder, textarea::placeholder { color: #506064; opacity: 1; }
+.role-select { width: 202px; min-height: 38px; background-color: #fff; color: var(--ink); font-size: 12px; }
+.btn { min-height: 40px; border: 1px solid var(--ink); border-radius: 0; background: #fff; color: var(--ink); font-weight: 700; font-size: 12px; }
+.btn:hover { background: #f1f3ee; border-color: var(--ink); }
+.btn-primary { color: #fff; background: var(--ink); border-color: var(--ink); }
+.btn-primary:hover { color: var(--ink); background: var(--vermilion); border-color: var(--ink); }
+.btn-accent { color: var(--ink); background: var(--vermilion); border-color: var(--ink); }
+.btn-accent:hover { color: #fff; background: #29383b; border-color: #29383b; }
+.btn-quiet { border-color: transparent; background: transparent; }
+.btn-quiet:hover { background: var(--sheet-alt); border-color: var(--line-strong); }
+.btn-danger { color: var(--danger); border-color: var(--danger); background: #fff; }
+.btn-danger:hover { color: #fff; background: var(--danger); border-color: var(--danger); }
+.icon-button { color: var(--ink); border: 1px solid transparent; }
+.icon-button:hover, .icon-button[aria-expanded="true"] { background: #fff; border-color: var(--ink); }
+.unread-dot { background: var(--danger); border-color: var(--vermilion); }
+main#mainContent { padding: 26px 32px 54px; }
+.page-head { position: relative; align-items: center; min-height: 132px; gap: 24px; margin: 0 0 16px; padding: 22px 25px 21px; color: #fff; background: var(--ink); border-bottom: 7px solid var(--vermilion); }
+.page-head > div:first-child { max-width: 70ch; }
+h1 { margin-bottom: 7px; color: #fff; font: 750 clamp(28px,3vw,40px)/1.08 var(--sans); letter-spacing: -.03em; }
+.page-description { color: #e2e9e8; font-size: 13px; line-height: 1.55; }
+.page-head-meta { justify-content: flex-end; color: #e2e9e8; }
+.demo-label { padding: 7px 9px; border: 1px solid var(--vermilion); background: var(--vermilion); color: var(--ink); font-size: 11px; letter-spacing: .08em; }
+.demo-label::before { width: 7px; height: 7px; background: var(--ink); border-radius: 0; }
+.service-line { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0; margin-bottom: 16px; padding: 0; border: 2px solid var(--ink); background: #202c30; color: #fff; }
+.service-item { min-height: 46px; padding: 8px 12px; color: #f3f7f5; border-right: 1px solid #586366; }
+.service-item:last-child { border-right: 0; }
+.service-item::before { width: 8px; height: 8px; border-radius: 0; }
+.service-line strong { color: var(--vermilion); font-size: 16px; font-weight: 800; }
+.service-item.is-risk::before { background: var(--danger); border-color: #fff; }
+.service-item.is-waiting::before { background: var(--gold-wash); border-color: var(--vermilion); }
+.workbench { grid-template-columns: minmax(320px,.84fr) minmax(480px,1.16fr); border: 2px solid var(--ink); background: #fff; }
+.queue-panel { border-right: 1px solid var(--line-strong); }
+.queue-heading { min-height: 53px; padding: 12px 15px; align-items: center; background: var(--ink); color: #fff; }
+.queue-heading h2 { color: #fff; font: 800 14px/1.3 var(--sans); letter-spacing: .045em; text-transform: uppercase; }
+.queue-total { padding: 4px 7px; background: var(--vermilion); color: var(--ink); font-size: 11px; font-weight: 800; }
+.queue-filters { padding: 11px 12px; background: #e6eae6; border-bottom: 1px solid var(--ink); }
+.queue-filters input, .queue-filters select { min-height: 37px; border-color: #798688; font-size: 12px; }
+.search-wrap .icon { color: #364649; }
+.filter-more { gap: 7px; }
+.ticket-list { max-height: 730px; background: #fff; scrollbar-color: #879394 #e6eae6; }
+.ticket-row { position: relative; padding: 13px 38px 13px 15px; border-top: 1px solid var(--line); background: #fff; }
+.ticket-row:hover { background: #f3f5f1; }
+.ticket-row[aria-current="true"] { background: var(--sheet-alt); box-shadow: none; }
+.ticket-row[aria-current="true"]::after { content: ""; position: absolute; top: 50%; right: 16px; width: 9px; height: 9px; border-top: 2px solid var(--ink); border-right: 2px solid var(--ink); transform: translateY(-50%) rotate(45deg); }
+.row-id { color: #344447; font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.priority-mark { font-size: 11px; letter-spacing: .03em; text-transform: uppercase; }
+.priority-mark::before { width: 8px; height: 8px; border-radius: 0; }
+.priority-mark[data-priority="High"] { color: #8e431b; }
+.row-title { margin: 6px 0 8px; color: var(--ink); font: 700 14px/1.35 var(--sans); letter-spacing: -.012em; }
+.row-bottom { gap: 8px 12px; }
+.status-mark { gap: 6px; color: #263639; font-size: 11px; letter-spacing: .075em; }
+.status-mark::before { width: 8px; height: 8px; }
+.status-mark[data-status="New"]::before { background: var(--vermilion); border-color: var(--ink); }
+.status-mark[data-status="Escalated"]::before { background: var(--danger); border-color: var(--danger); }
+.status-mark[data-status="Waiting"]::before { background: var(--gold-wash); border-color: var(--gold); }
+.status-mark[data-status="In progress"]::before, .status-mark[data-status="Reopened"]::before { background: var(--blue-wash); border-color: var(--blue); }
+.status-mark[data-status="Resolved"]::before, .status-mark[data-status="Closed"]::before { background: var(--olive-wash); border-color: var(--olive); }
+.row-person, .row-deadline { color: #4a595c; font-size: 11px; }
+.row-deadline.is-late { color: var(--danger); font-weight: 800; }
+.empty-queue { padding: 34px 18px; color: #415154; }
+.empty-queue strong { color: var(--ink); font: 750 17px var(--sans); }
+.detail-panel { padding: 22px 24px 28px; background: #fff; }
+.detail-empty { color: #4a595c; }
+.detail-empty h2 { color: var(--ink); font: 750 22px var(--sans); }
+.detail-topline { padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+.record-id { color: #435255; font-size: 11px; font-weight: 750; letter-spacing: .075em; text-transform: uppercase; }
+.detail-title { color: var(--ink); font: 750 clamp(22px,2.2vw,30px)/1.16 var(--sans); letter-spacing: -.027em; }
+.detail-summary { color: #364649; font-size: 13px; line-height: 1.6; }
+.phase-wrap { grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: center; margin: 18px -24px 20px; padding: 14px 24px 15px; background: #eef1ed; border-top: 4px solid var(--vermilion); border-bottom: 1px solid var(--line-strong); }
+.phase-title { color: #344447; font-size: 11px; letter-spacing: .12em; }
+.phase-rail { gap: 0; padding-top: 0; }
+.phase-rail::before { top: 6px; height: 2px; background: #879394; }
+.phase-rail::after { display: none; }
+.phase-step { position: relative; padding-top: 20px; color: #48575a; font-size: 11px; }
+.phase-step::before { content: ""; position: absolute; z-index: 2; top: 0; left: 0; width: 14px; height: 14px; background: #fff; border: 2px solid var(--ink); }
+.phase-step:not(:last-child)::after { content: ""; position: absolute; top: 6px; left: 15px; right: 0; height: 2px; background: #879394; }
+.phase-step.is-past::before { background: var(--ink); }
+.phase-step.is-past:not(:last-child)::after { background: var(--ink); }
+.phase-step.is-past, .phase-step.is-current { color: var(--ink); font-weight: 800; }
+.phase-step.is-current::before { top: -1px; width: 16px; height: 16px; background: var(--vermilion); border: 2px solid var(--ink); }
+.phase-aside { min-width: 138px; padding: 8px 10px; background: var(--ink); color: #fff; text-align: left; }
+.phase-aside strong { color: var(--vermilion); font: 800 13px var(--sans); }
+.phase-aside span { color: #e2e9e8; font-size: 11px; }
+.field-grid { gap: 15px 17px; padding-bottom: 20px; border-color: var(--line-strong); }
+.field-grid dt { color: #4a595c; font-size: 11px; letter-spacing: .09em; }
+.field-grid dd { color: var(--ink); font-size: 13px; font-weight: 700; }
+.sla-value.is-late { color: var(--danger); }
+.journal-section { padding-top: 20px; }
+.section-title-row h3 { color: var(--ink); font: 800 15px var(--sans); letter-spacing: .035em; text-transform: uppercase; }
+.section-title-row span { color: #4a595c; font-size: 11px; }
+.timeline-item { grid-template-columns: 25px minmax(0,1fr); gap: 10px; padding-bottom: 16px; }
+.timeline-item:not(:last-child)::before { left: 7px; width: 2px; background: #afb9b8; }
+.timeline-mark { width: 16px; height: 16px; background: #fff; border: 2px solid var(--ink); color: var(--ink); }
+.timeline-mark .icon { width: 9px; height: 9px; }
+.timeline-item.is-comment .timeline-mark { border-color: var(--blue); color: var(--blue); }
+.timeline-item.is-internal .timeline-mark { border-color: var(--gold); color: var(--gold); }
+.timeline-item.is-escalation .timeline-mark { border-color: var(--danger); color: var(--danger); }
+.timeline-heading strong { color: var(--ink); font-size: 12px; }
+.timeline-heading time, .timeline-kind { color: #4a595c; font-size: 11px; }
+.timeline-body { color: #344447; font-size: 12px; line-height: 1.6; }
+.internal-label { border-color: #b89036; color: #604000; }
+.action-section { border-color: var(--line-strong); }
+.action-section h3 { color: var(--ink); font: 800 15px var(--sans); }
+.action-hint { color: #4a595c; }
+.form-field label, .form-label, fieldset.form-field legend { color: #344447; font-size: 12px; }
+.form-field input, .form-field select, .form-field textarea { font-size: 13px; }
+input[type="radio"], input[type="checkbox"] { accent-color: #111a1d; }
+.confirmation { border-color: var(--line-strong); }
+.confirmation p { color: #344447; font-size: 13px; }
+.rating-scale label { border-radius: 0; }
+.rating-scale label:has(input:checked) { border-color: var(--ink); background: var(--vermilion); color: var(--ink); }
+.page-form, .report-surface, .knowledge-layout, .settings-layout { background: #fff; border-top: 3px solid var(--ink); border-bottom: 1px solid var(--line-strong); }
+.page-form { padding: 23px 25px 29px; }
+.form-intro, .settings-section p { color: #344447; font-size: 13px; line-height: 1.6; }
+.form-intro strong { color: var(--ink); }
+.choice-row label { border-color: var(--line-strong); background: #f4f6f2; color: #344447; }
+.choice-row label:has(input:checked) { border-color: var(--ink); background: var(--vermilion-wash); color: var(--ink); }
+.priority-preview { border-color: var(--line-strong); color: #344447; }
+.file-input { border-color: var(--line-strong); background: #f4f6f2; color: #344447; }
+.form-error { border-color: var(--danger); background: #fff0ed; color: #7f211b; }
+.report-surface { padding: 22px 24px 26px; }
+.report-head h2 { font: 800 18px var(--sans); }
+.report-head p, .report-stat dt, .report-stat small { color: #4a595c; }
+.report-stat dd { color: var(--ink); font: 800 25px/1.2 var(--sans); }
+.report-columns h3, .knowledge-article h3, .settings-section h3 { font: 800 15px var(--sans); }
+.data-table th { color: #344447; }
+.bar-track { background: #e2e8e4; }
+.bar-fill { background: var(--olive); }
+.bar-row:nth-child(2) .bar-fill { background: var(--blue); }
+.bar-row:nth-child(3) .bar-fill { background: var(--gold); }
+.bar-row:nth-child(4) .bar-fill { background: #a25434; }
+.late-list time { color: var(--danger); }
+.knowledge-index { background: #eff2ed; border-color: var(--line-strong); }
+.knowledge-index h2 { font: 800 15px var(--sans); text-transform: uppercase; }
+.article-link { color: #344447; }
+.article-link:hover, .article-link[aria-current="true"] { color: var(--ink); font-weight: 800; text-decoration: underline; text-decoration-color: var(--gold); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.knowledge-article h2 { color: var(--ink); font: 750 27px/1.2 var(--sans); letter-spacing: -.025em; }
+.knowledge-article .article-meta, .knowledge-article p, .knowledge-article li { color: #344447; }
+.article-feedback { color: #4a595c; }
+.settings-layout { padding: 23px; }
+.settings-section + .settings-section { border-color: var(--line-strong); }
+.category-row { border-color: var(--line); }
+.category-row small, .preference-line span { color: #4a595c; }
+.preference-line { border-color: var(--line); }
+.notification-popover { top: 60px; padding: 15px 16px 10px; background: #fff; border: 2px solid var(--ink); box-shadow: 0 10px 26px rgb(17 26 29 / .2); }
+.notification-head { padding-bottom: 10px; border-bottom: 2px solid var(--vermilion); }
+.notification-head h2 { color: var(--ink); font: 800 15px var(--sans); }
+.notification-head button { color: #344447; }
+.notification-item { border-color: var(--line); }
+.notification-item strong { color: var(--ink); }
+.notification-item span, .notification-empty { color: #4a595c; }
+.toast { border: 1px solid var(--ink); background: var(--ink); color: #fff; box-shadow: 0 8px 20px rgb(17 26 29 / .22); }
+.toast.is-error { background: var(--danger); border-color: var(--danger); }
+.mobile-back { color: var(--ink); font-weight: 700; text-decoration-color: var(--gold); text-underline-offset: 4px; }
+@media (max-width: 1180px) {
+  .app-shell { grid-template-columns: 220px minmax(0,1fr); }
+  .topbar, main#mainContent { padding-left: 24px; padding-right: 24px; }
+  .workbench { grid-template-columns: minmax(280px,.8fr) minmax(400px,1.2fr); }
+}
+@media (max-width: 980px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { background: var(--ink); border-bottom: 4px solid var(--vermilion); }
+  .topbar { background: var(--vermilion); }
+}
+@media (max-width: 760px) {
+  main#mainContent { padding: 18px 16px 38px; }
+  .page-head { align-items: flex-start; min-height: auto; padding: 19px 18px 17px; }
+  .page-head-meta { justify-content: flex-start; }
+  .workbench { border-width: 1px; }
+  .queue-panel { border-right: 0; }
+  .detail-panel { border-top: 2px solid var(--ink); }
+  .phase-wrap { margin: 16px -16px 18px; padding: 13px 16px 14px; }
+  .service-line { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .service-item:nth-child(2) { border-right: 0; }
+  .service-item:nth-child(-n+2) { border-bottom: 1px solid #586366; }
+}
+@media (max-width: 500px) {
+  .sidebar { background: var(--ink); }
+  .brand { padding-bottom: 7px; }
+  .topbar { background: var(--vermilion); }
+  .workspace-name { font-size: 11px; letter-spacing: .055em; }
+  .role-select { width: 128px; }
+  main#mainContent { padding: 14px 10px 30px; }
+  .page-head { gap: 12px; padding: 17px 14px 15px; }
+  .page-head-meta { gap: 8px; }
+  .demo-label { padding: 6px 7px; }
+  .service-line { margin-bottom: 12px; }
+  .service-item { min-height: 44px; padding: 7px 8px; gap: 6px; font-size: 11px; }
+  .service-line strong { font-size: 14px; }
+  .queue-heading { padding-left: 11px; padding-right: 11px; }
+  .queue-filters { padding: 9px; }
+  .ticket-row { padding: 12px 32px 12px 11px; }
+  .row-bottom { gap: 6px 9px; }
+  .phase-wrap { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
+  .phase-step { font-size: 11px; }
+  .phase-aside { min-width: 0; }
+  .field-grid { gap: 11px 10px; }
+  .field-grid dt { font-size: 11px; }
+  .field-grid dd { font-size: 12px; }
+  .page-form, .report-surface { padding-left: 13px; padding-right: 13px; }
+  .settings-layout { padding: 17px 14px; }
+  .notification-popover { top: 48px; right: 8px; }
+}
+@media (max-width: 380px) {
+  .topbar { justify-content: flex-end; padding-right: 8px; padding-left: 8px; }
+  .topbar > div:first-child { display: none; }
+  .top-actions { gap: 2px; }
+  .role-select { width: 116px; }
+}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" class="sr-only" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22V5.5Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h6"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 4h16l1 11-3 5H6l-3-5 1-11Z"/><path d="M3.5 14h5l1.5 2h4l1.5-2h5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V5M4 20h17M8 16l3-4 3 2 5-7"/><path d="M17 7h2v2"/></symbol>
+  <symbol id="i-book-open" viewBox="0 0 24 24"><path d="M3 5.5c3.5-1.2 6.5-.8 9 1.5v14c-2.5-2.3-5.5-2.7-9-1.5v-14ZM21 5.5c-3.5-1.2-6.5-.8-9 1.5v14c2.5-2.3 5.5-2.7 9-1.5v-14Z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19 13.5 1.5 1.1-1.5 2.6-1.8-.6a7 7 0 0 1-1.7 1l-.3 1.9h-3l-.3-1.9a7 7 0 0 1-1.7-1l-1.8.6-1.5-2.6 1.5-1.1a7 7 0 0 1 0-2L5 10.4l1.5-2.6 1.8.6a7 7 0 0 1 1.7-1l.3-1.9h3l.3 1.9a7 7 0 0 1 1.7 1l1.8-.6 1.5 2.6-1.5 1.1a7 7 0 0 1 0 2Z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V5H4v13h4"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M4 5h16v12H9l-5 4V5Z"/><path d="M8 9h8M8 13h5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><path d="M12 22V4M12 7H4l2-2M4 7l2 2M12 12h8l-2-2m2 2-2 2"/><path d="M7 7h5m0 5h5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v5M12 17.2v.1"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+</svg>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Workspace navigation">
+    <div class="brand" aria-label="University IT Support">
+      <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-route"/></svg></span>
+      <span class="brand-name">Campus IT<span>Help point · demo</span></span>
+    </div>
+    <div class="demo-note"><strong>Demonstration workspace</strong>Sample people and requests are fictional. Changes stay in this browser.</div>
+    <div>
+      <p class="side-label">Workspace</p>
+      <nav class="side-nav" id="sideNav" aria-label="Main navigation"></nav>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="profile"><span class="avatar" id="profileAvatar">DP</span><span><span class="profile-name" id="profileName">Dana Patel</span><span class="profile-role" id="profileRole">Dispatcher · demo role</span></span></div>
+      <button class="reset-link" id="resetDemo" type="button">Reset demonstration data</button>
+    </div>
+  </aside>
+  <div class="main-shell">
+    <header class="topbar">
+      <div><span class="workspace-name">IT SERVICE · CAMPUS</span><span class="workspace-hint">University support route</span></div>
+      <div class="top-actions">
+        <button class="icon-button" id="notificationsButton" type="button" aria-label="Notifications" aria-expanded="false" aria-controls="notificationPanel"><svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg><span class="unread-dot" id="unreadDot" aria-hidden="true"></span></button>
+        <label class="role-select-wrap"><span class="sr-only">Switch demonstration role</span><select class="role-select" id="roleSelect"><option value="requester">Requester · Maya Chen</option><option value="dispatcher">Dispatcher · Dana Patel</option><option value="specialist">Specialist · Samira Okafor</option><option value="manager">Support manager · Arun Shah</option><option value="admin">Administrator · Lee Morgan</option></select></label>
+        <button class="btn btn-primary" id="newRequestButton" type="button"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span>New request</span></button>
+      </div>
+    </header>
+    <main id="mainContent" tabindex="-1"><div id="viewRoot"></div></main>
+  </div>
+</div>
+<div class="notification-popover" id="notificationPanel" role="region" aria-label="Notifications" hidden></div>
+<div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+<script>
+(() => {
+  "use strict";
+  const STORAGE_KEY = "university-helpdesk-demo-v1";
+  const roleNames = { requester: "Requester", dispatcher: "Dispatcher", specialist: "Support specialist", manager: "Support manager", admin: "Administrator" };
+  const rolePeople = { requester: "Maya Chen", dispatcher: "Dana Patel", specialist: "Samira Okafor", manager: "Arun Shah", admin: "Lee Morgan" };
+  const groups = ["Network services", "Classroom technology", "Accounts and access", "Software support", "Endpoint services"];
+  const phases = ["Submitted", "Assigned", "In progress", "Resolved", "Closed"];
+  const knowledgeArticles = [
+    { id: "wifi", title: "Reconnect to the campus Wi-Fi", category: "Network services", intro: "Use these steps when a device repeatedly drops its connection to the university wireless network.", steps: ["Turn Wi-Fi off for ten seconds, then turn it on again.", "Forget the saved university network and reconnect with your current campus account.", "If the sign-in page does not appear, open a browser to a familiar university page.", "If the connection still drops, submit a request with your building and device type."], updated: "Reviewed for this demonstration" },
+    { id: "password", title: "Restore access after a password change", category: "Accounts and access", intro: "A recently changed password can leave an older session active on another device.", steps: ["Sign out of the affected university service completely.", "Check that the device is using the new password and the correct account name.", "Wait a few minutes before trying again if the account was just updated.", "Contact support if the account remains locked; do not send your password in a ticket."], updated: "Reviewed for this demonstration" },
+    { id: "license", title: "Check a teaching software license", category: "Software support", intro: "If a lab application reports that a license is unavailable, note the room and the exact message before opening a request.", steps: ["Confirm the computer is connected to the campus network.", "Close the application and reopen it once.", "Check whether the issue affects one computer or the whole lab.", "Include the application name, room, and error text in your request."], updated: "Reviewed for this demonstration" },
+    { id: "projector", title: "Troubleshoot a classroom display", category: "Classroom technology", intro: "A few quick checks can help support staff identify a display issue before a class begins.", steps: ["Confirm the display is powered on and the expected input is selected.", "Reconnect the cable at both ends, if it is safe to access.", "Try a second presentation device if one is available.", "If a class is in progress, include the room and start time so the request can be prioritized."], updated: "Reviewed for this demonstration" }
+  ];
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const esc = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+  const iso = (hoursFromNow) => new Date(Date.now() + hoursFromNow * 3600000).toISOString();
+  const ago = (hours) => iso(-hours);
+  const fmtDate = (value, options = {}) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", ...options }).format(new Date(value));
+  const fmtRelative = (value) => {
+    const delta = new Date(value).getTime() - Date.now();
+    const mins = Math.round(Math.abs(delta) / 60000);
+    if (mins < 60) return delta < 0 ? `Overdue ${mins}m` : `Due in ${mins}m`;
+    const hours = Math.round(mins / 60);
+    if (hours < 24) return delta < 0 ? `Overdue ${hours}h` : `Due in ${hours}h`;
+    const days = Math.round(hours / 24);
+    return delta < 0 ? `Overdue ${days}d` : `Due in ${days}d`;
+  };
+  const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+  const clone = (obj) => JSON.parse(JSON.stringify(obj));
+
+  function makeTicket(data) {
+    return { comments: [], history: [], attachments: [], rating: null, resolution: "", closedAt: null, ...data };
+  }
+  function initialState() {
+    const tickets = [
+      makeTicket({ id: "HD-2048", title: "Wi-Fi disconnects in the Engineering building", description: "The connection drops every few minutes on the second floor. I have restarted my laptop and forgotten the network, but it keeps happening.", category: "Network services", impact: "Several people", urgency: "Urgent", priority: "Critical", status: "In progress", requester: "Maya Chen", group: "Network services", assignee: "Samira Okafor", createdAt: ago(2.2), dueAt: iso(.8), history: [{ kind: "history", actor: "Dana Patel", at: ago(2.15), text: "Assigned to Network services and Samira Okafor." }, { kind: "history", actor: "Samira Okafor", at: ago(1.5), text: "Started checking the wireless access point near the second-floor study area." }], comments: [{ kind: "comment", actor: "Maya Chen", at: ago(1.8), text: "It is affecting two classmates in the same room, too.", visibility: "public" }, { kind: "comment", actor: "Samira Okafor", at: ago(.9), text: "I am checking whether the access point is handing devices between channels. I will update you shortly.", visibility: "public" }] }),
+      makeTicket({ id: "HD-2047", title: "License activation fails in the design lab", description: "The design application says that no teaching license is available. We have tried two computers in the lab.", category: "Software support", impact: "Several people", urgency: "Normal", priority: "High", status: "Assigned", requester: "Jordan Lee", group: "Software support", assignee: "Noah Williams", createdAt: ago(3.1), dueAt: iso(4.7), history: [{ kind: "history", actor: "Dana Patel", at: ago(3), text: "Routed to Software support; Noah Williams is reviewing the license pool." }], comments: [] }),
+      makeTicket({ id: "HD-2046", title: "Shared lab computer restarts without warning", description: "The workstation in room B214 has restarted twice during a class exercise. The last restart happened around 10:20.", category: "Endpoint services", impact: "Teaching activity", urgency: "Urgent", priority: "Critical", status: "Waiting", requester: "Maya Chen", group: "Endpoint services", assignee: "Samira Okafor", createdAt: ago(6.3), dueAt: iso(-.4), history: [{ kind: "history", actor: "Dana Patel", at: ago(6.1), text: "Assigned to Endpoint services." }, { kind: "history", actor: "Samira Okafor", at: ago(4.3), text: "Requested the device asset label and the approximate restart time." }], comments: [{ kind: "comment", actor: "Maya Chen", at: ago(3.8), text: "The label is LAB-B214-07. It restarted just after opening the course simulator.", visibility: "public" }] }),
+      makeTicket({ id: "HD-2045", title: "Student account locked after password change", description: "I changed my password this morning and now cannot sign in to the course portal.", category: "Accounts and access", impact: "One person", urgency: "Urgent", priority: "High", status: "New", requester: "Maya Chen", group: "Accounts and access", assignee: "Unassigned", createdAt: ago(.35), dueAt: iso(3.65), history: [{ kind: "history", actor: "Maya Chen", at: ago(.35), text: "Request received. The service desk will review the account access issue." }], comments: [] }),
+      makeTicket({ id: "HD-2044", title: "Projector has no signal before a lecture", description: "The room display shows no signal and a class begins shortly. The cable is connected, but changing the input did not help.", category: "Classroom technology", impact: "Teaching activity", urgency: "Urgent", priority: "Critical", status: "Escalated", requester: "Alex Morgan", group: "Classroom technology", assignee: "Arun Shah", createdAt: ago(3.4), dueAt: iso(-1.2), history: [{ kind: "history", actor: "Dana Patel", at: ago(3.3), text: "Assigned to Classroom technology." }, { kind: "escalation", actor: "Noah Williams", at: ago(1.1), text: "Class starts soon and the room display is still unavailable. Escalated to the support manager." }], comments: [{ kind: "comment", actor: "Alex Morgan", at: ago(3.2), text: "Room C108. The lecture is scheduled to start in about twenty minutes.", visibility: "public" }] }),
+      makeTicket({ id: "HD-2043", title: "Department printer rejects my print job", description: "The printer queue held a document after I sent it from the library workstation.", category: "Endpoint services", impact: "One person", urgency: "Normal", priority: "Normal", status: "Closed", requester: "Maya Chen", group: "Endpoint services", assignee: "Samira Okafor", createdAt: ago(28), dueAt: ago(4), resolution: "Cleared a stale print job from the workstation queue and confirmed a new test page printed successfully.", closedAt: ago(5), rating: { score: 5, comment: "Quick and clear help.", at: ago(4.8) }, history: [{ kind: "history", actor: "Samira Okafor", at: ago(8), text: "Removed the stale queue entry and sent a test page." }, { kind: "history", actor: "Samira Okafor", at: ago(7), text: "Recorded the resolution and returned the ticket for requester confirmation." }, { kind: "history", actor: "Maya Chen", at: ago(5), text: "Confirmed the solution. Ticket closed." }], comments: [] }),
+      makeTicket({ id: "HD-2042", title: "VPN profile will not connect from home", description: "The university VPN stops at the profile verification step on my laptop.", category: "Network services", impact: "One person", urgency: "Normal", priority: "Normal", status: "Closed", requester: "Alex Morgan", group: "Network services", assignee: "Samira Okafor", createdAt: ago(39), dueAt: ago(12), resolution: "Replaced the outdated VPN profile and confirmed the connection reached the university sign-in page.", closedAt: ago(14), rating: { score: 4, comment: "That fixed it. The steps were easy to follow.", at: ago(13.8) }, history: [{ kind: "history", actor: "Samira Okafor", at: ago(18), text: "Shared the current VPN profile steps and verified the revised connection." }, { kind: "history", actor: "Alex Morgan", at: ago(14), text: "Confirmed the issue is resolved and closed the request." }], comments: [] }),
+      makeTicket({ id: "HD-2041", title: "Course portal says my account does not exist", description: "The portal does not recognize my university account after I enrolled in a new course.", category: "Accounts and access", impact: "One person", urgency: "Normal", priority: "Normal", status: "Waiting", requester: "Maya Chen", group: "Accounts and access", assignee: "Samira Okafor", createdAt: ago(9), dueAt: iso(15), history: [{ kind: "history", actor: "Dana Patel", at: ago(8.8), text: "Assigned to Accounts and access." }, { kind: "history", actor: "Samira Okafor", at: ago(6), text: "Asked the requester to confirm the course code shown in the portal." }], comments: [{ kind: "comment", actor: "Samira Okafor", at: ago(6), text: "Could you share the course code? Please do not send your password.", visibility: "public" }] }),
+      makeTicket({ id: "HD-2040", title: "Device asks for an encryption recovery key", description: "After a system update, the laptop asks for a recovery key that I do not have.", category: "Endpoint services", impact: "One person", urgency: "Normal", priority: "High", status: "Resolved", requester: "Jordan Lee", group: "Endpoint services", assignee: "Samira Okafor", createdAt: ago(17), dueAt: ago(2), resolution: "Verified the device record and provided the recovery steps through the approved support process. The requester has not confirmed yet.", history: [{ kind: "history", actor: "Samira Okafor", at: ago(5), text: "Verified the device record and sent recovery instructions through the support process." }], comments: [{ kind: "comment", actor: "Samira Okafor", at: ago(5), text: "Please confirm the device starts normally after following the recovery steps.", visibility: "public" }] }),
+      makeTicket({ id: "HD-2039", title: "Lecture recording is not appearing in the course site", description: "Yesterday's recording is not listed in the course page, although the class session finished normally.", category: "Classroom technology", impact: "Several people", urgency: "Normal", priority: "High", status: "Assigned", requester: "Taylor Reed", group: "Classroom technology", assignee: "Noah Williams", createdAt: ago(12), dueAt: iso(7), history: [{ kind: "history", actor: "Dana Patel", at: ago(11.8), text: "Routed to Classroom technology for a recording sync check." }], comments: [] }),
+      makeTicket({ id: "HD-2038", title: "New staff member needs access to shared software", description: "A new staff member cannot open the shared planning application used by the department.", category: "Software support", impact: "Several people", urgency: "Low", priority: "Normal", status: "In progress", requester: "Casey Brown", group: "Software support", assignee: "Samira Okafor", createdAt: ago(20), dueAt: iso(21), history: [{ kind: "history", actor: "Dana Patel", at: ago(19.8), text: "Assigned to Software support." }, { kind: "history", actor: "Samira Okafor", at: ago(13), text: "Checked the access group and requested the department name for verification." }], comments: [{ kind: "comment", actor: "Casey Brown", at: ago(12), text: "The department is Student Services.", visibility: "public" }] }),
+      makeTicket({ id: "HD-2037", title: "Lab software closes when saving a project", description: "The application closes after I choose Save As. It happens on two computers in the media lab.", category: "Software support", impact: "Several people", urgency: "Urgent", priority: "Critical", status: "Escalated", requester: "Maya Chen", group: "Software support", assignee: "Arun Shah", createdAt: ago(27), dueAt: iso(-2.5), history: [{ kind: "history", actor: "Dana Patel", at: ago(26.8), text: "Assigned to Software support." }, { kind: "escalation", actor: "Samira Okafor", at: ago(4), text: "The issue affects several lab users and needs a license configuration review. Escalated to the support manager." }], comments: [{ kind: "comment", actor: "Maya Chen", at: ago(26), text: "The lab is in the media building, room M106.", visibility: "public" }] })
+    ];
+    const now = new Date().toISOString();
+    return { version: 1, role: "dispatcher", page: "queue", selectedId: "HD-2048", query: "", statusFilter: "all", categoryFilter: "all", priorityFilter: "all", articleId: "wifi", categories: ["Accounts and access", "Classroom technology", "Endpoint services", "Network services", "Software support"], tickets, notifications: [
+      { id: "n-1", ticketId: "HD-2044", title: "Ticket escalated", body: "Projector has no signal before a lecture", at: ago(1.1), read: false },
+      { id: "n-2", ticketId: "HD-2048", title: "Requester added a reply", body: "Wi-Fi disconnects in the Engineering building", at: ago(1.8), read: false },
+      { id: "n-3", ticketId: "HD-2045", title: "New request received", body: "Student account locked after password change", at: ago(.35), read: false },
+      { id: "n-4", ticketId: "HD-2040", title: "Resolution awaiting confirmation", body: "Device asks for an encryption recovery key", at: ago(5), read: true }
+    ] };
+  }
+  function readState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && saved.version === 1 && Array.isArray(saved.tickets)) return { ...initialState(), ...saved };
+    } catch (_) {}
+    return initialState();
+  }
+  let state = readState();
+  let toastTimer = null;
+  let mobileDetail = false;
+  let currentArticle = knowledgeArticles.find(article => article.id === state.articleId) || knowledgeArticles[0];
+  const root = $("#viewRoot");
+  function persist() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (_) { showToast("This browser could not save the demo changes. You can still explore this session.", "error"); }
+  }
+  function roleUser() { return rolePeople[state.role] || rolePeople.dispatcher; }
+  function ticketById(id) { return state.tickets.find(ticket => ticket.id === id); }
+  function openTickets() { return state.tickets.filter(ticket => !["Closed"].includes(ticket.status)); }
+  function statusStage(status) {
+    if (status === "New") return 0;
+    if (status === "Assigned") return 1;
+    if (["In progress", "Waiting", "Escalated", "Reopened"].includes(status)) return 2;
+    if (status === "Resolved") return 3;
+    return 4;
+  }
+  function slaLabel(ticket) {
+    if (ticket.status === "Closed") {
+      if (!ticket.closedAt || !ticket.dueAt) return "Closed";
+      return new Date(ticket.closedAt) <= new Date(ticket.dueAt) ? "Deadline met" : "Closed after target";
+    }
+    if (ticket.status === "Resolved") return "Resolution awaiting confirmation";
+    return fmtRelative(ticket.dueAt);
+  }
+  function isLate(ticket) { return !["Closed", "Resolved"].includes(ticket.status) && new Date(ticket.dueAt).getTime() < Date.now(); }
+  function getRoleTickets() {
+    if (state.role === "requester") return state.tickets.filter(t => t.requester === roleUser());
+    if (state.role === "specialist") return state.tickets.filter(t => t.assignee === roleUser());
+    if (state.role === "manager") return state.tickets.filter(t => t.status === "Escalated" || isLate(t) || !["Closed"].includes(t.status));
+    return state.tickets;
+  }
+  function getFilteredTickets() {
+    const query = (state.query || "").trim().toLowerCase();
+    return getRoleTickets().filter(ticket => {
+      const searchable = [ticket.id, ticket.title, ticket.description, ticket.requester, ticket.category, ticket.group, ticket.assignee].join(" ").toLowerCase();
+      return (!query || searchable.includes(query)) && (state.statusFilter === "all" || ticket.status === state.statusFilter) && (state.categoryFilter === "all" || ticket.category === state.categoryFilter) && (state.priorityFilter === "all" || ticket.priority === state.priorityFilter);
+    }).sort((a, b) => {
+      const riskA = isLate(a) ? -2 : a.status === "Escalated" ? -1 : 0;
+      const riskB = isLate(b) ? -2 : b.status === "Escalated" ? -1 : 0;
+      return riskA - riskB || new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  }
+  function statusTag(status) { return `<span class="status-mark" data-status="${esc(status)}">${esc(status)}</span>`; }
+  function priorityTag(priority) { return `<span class="priority-mark" data-priority="${esc(priority)}">${esc(priority)}</span>`; }
+  function navItems() {
+    if (state.role === "requester") return [{ id: "queue", label: "My requests", icon: "user", count: getRoleTickets().filter(t => !["Closed"].includes(t.status)).length }, { id: "knowledge", label: "Knowledge base", icon: "book-open" }];
+    if (state.role === "specialist") return [{ id: "queue", label: "My work queue", icon: "inbox", count: getRoleTickets().filter(t => !["Closed"].includes(t.status)).length }, { id: "insights", label: "Service insights", icon: "chart" }, { id: "knowledge", label: "Knowledge base", icon: "book-open" }];
+    if (state.role === "manager") return [{ id: "queue", label: "Escalations & watch", icon: "alert", count: getRoleTickets().filter(t => t.status === "Escalated" || isLate(t)).length }, { id: "insights", label: "Service insights", icon: "chart" }, { id: "knowledge", label: "Knowledge base", icon: "book-open" }];
+    const items = [{ id: "queue", label: "Work queue", icon: "inbox", count: openTickets().length }, { id: "insights", label: "Service insights", icon: "chart" }, { id: "knowledge", label: "Knowledge base", icon: "book-open" }];
+    if (state.role === "admin") items.push({ id: "settings", label: "Service settings", icon: "settings" });
+    return items;
+  }
+  function renderNav() {
+    $("#sideNav").innerHTML = navItems().map(item => `<button class="nav-item" type="button" data-page="${item.id}" aria-current="${state.page === item.id ? "page" : "false"}">${icon(item.icon)}<span>${esc(item.label)}</span>${item.count !== undefined ? `<span class="nav-count">${item.count}</span>` : ""}</button>`).join("");
+  }
+  function pageTitle() {
+    if (state.page === "new") return { title: "Create a support request", description: "Tell the service desk what happened. Impact and urgency help set the initial priority." };
+    if (state.page === "insights") return { title: "Service insights", description: "A live view of the synthetic queue, service deadlines, and requester feedback." };
+    if (state.page === "knowledge") return { title: "Knowledge base", description: "Short, practical steps for common university technology issues." };
+    if (state.page === "settings") return { title: "Service settings", description: "Manage demonstration categories and routing defaults." };
+    if (state.role === "requester") return { title: "My support requests", description: "Your requests, updates from support, and solutions awaiting your confirmation." };
+    if (state.role === "specialist") return { title: "My work queue", description: `Requests currently assigned to ${roleUser()}.` };
+    if (state.role === "manager") return { title: "Escalations and deadline watch", description: "Escalated tickets and open work that needs a deadline check." };
+    return { title: "Support queue", description: "Review incoming requests, route work, and keep service deadlines visible." };
+  }
+  function renderPageHead() {
+    const info = pageTitle();
+    const sideMeta = state.page === "queue" ? `<span>${getRoleTickets().length} ${getRoleTickets().length === 1 ? "request" : "requests"} in this view</span>` : `<span>Saved in this browser</span>`;
+    return `<section class="page-head"><div><h1 tabindex="-1">${esc(info.title)}</h1><p class="page-description">${esc(info.description)}</p></div><div class="page-head-meta"><span class="demo-label">Synthetic demo data</span>${sideMeta}</div></section>`;
+  }
+  function renderServiceLine() {
+    const open = getRoleTickets().filter(t => t.status !== "Closed");
+    const late = open.filter(isLate).length;
+    const waiting = open.filter(t => t.status === "Waiting").length;
+    const escalated = open.filter(t => t.status === "Escalated").length;
+    return `<div class="service-line"><span class="service-item"><strong>${open.length}</strong> open requests</span><span class="service-item is-risk"><strong>${escalated}</strong> escalated</span><span class="service-item is-waiting"><strong>${waiting}</strong> waiting on information</span><span class="service-item ${late ? "is-risk" : ""}"><strong>${late}</strong> past target</span></div>`;
+  }
+  function renderQueue() {
+    const counts = getRoleTickets().length;
+    return `${renderServiceLine()}<section class="workbench ${mobileDetail ? "is-detail" : ""}" aria-label="Support queue and ticket details"><div class="queue-panel"><div class="queue-heading"><h2>${state.role === "requester" ? "Your requests" : state.role === "specialist" ? "Assigned to you" : "Ticket register"}</h2><span class="queue-total" id="queueTotal">${counts} records</span></div><div class="queue-filters"><label class="search-wrap"><span class="sr-only">Search requests</span>${icon("search")}<input id="searchInput" type="search" placeholder="Search title, ID or person" value="${esc(state.query)}"></label><label><span class="sr-only">Filter by status</span><select id="statusFilter" class="filter-select"><option value="all">All statuses</option>${["New","Assigned","In progress","Waiting","Escalated","Resolved","Closed","Reopened"].map(s => `<option value="${s}" ${state.statusFilter === s ? "selected" : ""}>${s}</option>`).join("")}</select></label><div class="filter-more"><label><span class="sr-only">Filter by category</span><select id="categoryFilter"><option value="all">All categories</option>${state.categories.map(c => `<option value="${esc(c)}" ${state.categoryFilter === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label><label><span class="sr-only">Filter by priority</span><select id="priorityFilter"><option value="all">All priorities</option>${["Critical","High","Normal","Low"].map(p => `<option value="${p}" ${state.priorityFilter === p ? "selected" : ""}>${p}</option>`).join("")}</select></label></div></div><div class="ticket-list" id="ticketList" aria-label="Requests">${renderTicketRows()}</div></div><section class="detail-panel" id="detailPanel" aria-label="Selected ticket">${renderDetail()}</section></section>`;
+  }
+  function renderTicketRows() {
+    const tickets = getFilteredTickets();
+    if (!tickets.length) return `<div class="empty-queue"><strong>No matching requests</strong>Try a different search or clear one of the filters.</div>`;
+    return tickets.map(ticket => `<button class="ticket-row" type="button" data-open-ticket="${esc(ticket.id)}" aria-current="${ticket.id === state.selectedId ? "true" : "false"}"><span class="row-top"><span class="row-id">${esc(ticket.id)} · ${esc(ticket.category)}</span>${priorityTag(ticket.priority)}</span><strong class="row-title">${esc(ticket.title)}</strong><span class="row-bottom">${statusTag(ticket.status)}<span class="row-person">${state.role === "requester" ? `Assigned to ${esc(ticket.assignee)}` : esc(ticket.requester)}</span><span class="row-deadline ${isLate(ticket) ? "is-late" : ""}">${esc(slaLabel(ticket))}</span></span></button>`).join("");
+  }
+  function eventList(ticket) {
+    const events = [...(ticket.history || []), ...(ticket.comments || [])].filter(event => state.role !== "requester" || event.visibility !== "internal");
+    if (ticket.resolution && !events.some(event => event.text?.includes(ticket.resolution))) events.push({ kind: "resolution", actor: ticket.assignee, at: ticket.closedAt || ticket.createdAt, text: ticket.resolution });
+    return events.sort((a, b) => new Date(a.at) - new Date(b.at));
+  }
+  function renderTimeline(ticket) {
+    const events = eventList(ticket);
+    if (!events.length) return `<p class="action-hint">No updates have been recorded yet.</p>`;
+    return `<ol class="timeline">${events.map(event => {
+      const kind = event.kind || "history";
+      const mark = kind === "comment" ? "message" : kind === "escalation" ? "alert" : "check";
+      const label = kind === "comment" ? "Message" : kind === "internal" || event.visibility === "internal" ? "Work note" : kind === "escalation" ? "Escalation" : kind === "resolution" ? "Resolution" : "Service history";
+      return `<li class="timeline-item ${kind === "comment" ? "is-comment" : kind === "escalation" ? "is-escalation" : kind === "internal" || event.visibility === "internal" ? "is-internal" : ""}"><span class="timeline-mark">${icon(mark)}</span><div class="timeline-content"><div class="timeline-heading"><strong>${esc(event.actor || "Service desk")}</strong><time datetime="${esc(event.at)}">${esc(fmtDate(event.at))}</time><span class="timeline-kind">${label}${event.visibility === "internal" ? `<span class="internal-label">Internal</span>` : ""}</span></div><p class="timeline-body">${esc(event.text)}${event.files?.length ? `<br><span class="timeline-kind">Attached: ${event.files.map(esc).join(", ")}</span>` : ""}</p></div></li>`;
+    }).join("")}</ol>`;
+  }
+  function phaseIndex(ticket) { return statusStage(ticket.status); }
+  function renderPhase(ticket) {
+    const index = phaseIndex(ticket);
+    return `<div class="phase-wrap"><div><p class="phase-title">Ticket lifecycle</p><div class="phase-rail" style="--step:${index}" aria-label="Current stage: ${esc(ticket.status)}">${phases.map((phase, i) => `<span class="phase-step ${i < index ? "is-past" : ""} ${i === index ? "is-current" : ""}">${phase}</span>`).join("")}</div></div><div class="phase-aside"><strong>${esc(ticket.status)}</strong><span>${esc(slaLabel(ticket))}</span></div></div>`;
+  }
+  function renderFields(ticket) {
+    const slaClass = isLate(ticket) ? "sla-value is-late" : "sla-value";
+    return `<dl class="field-grid"><div><dt>Requester</dt><dd>${esc(ticket.requester)}</dd></div><div><dt>Assigned group</dt><dd>${esc(ticket.group || "Unassigned")}</dd></div><div><dt>Specialist</dt><dd>${esc(ticket.assignee || "Unassigned")}</dd></div><div><dt>Category</dt><dd>${esc(ticket.category)}</dd></div><div><dt>Priority · impact / urgency</dt><dd>${esc(ticket.priority)} · ${esc(ticket.impact)} / ${esc(ticket.urgency)}</dd></div><div><dt>Service target</dt><dd class="${slaClass}">${esc(slaLabel(ticket))}<span style="display:block;color:var(--muted);font-size:11px;font-weight:400">${esc(fmtDate(ticket.dueAt))}</span></dd></div><div><dt>Submitted</dt><dd>${esc(fmtDate(ticket.createdAt))}</dd></div><div><dt>Attachments</dt><dd>${ticket.attachments?.length ? ticket.attachments.map(esc).join(", ") : "None"}</dd></div><div><dt>Requester rating</dt><dd>${ticket.rating ? `${ticket.rating.score} / 5${ticket.rating.comment ? ` · ${esc(ticket.rating.comment)}` : ""}` : ticket.status === "Closed" ? "Awaiting feedback" : "Available after closing"}</dd></div></dl>`;
+  }
+  function assigneeOptions(selected) {
+    const people = ["Unassigned", "Samira Okafor", "Noah Williams", "Avery Kim", "Arun Shah"];
+    return people.map(person => `<option ${selected === person ? "selected" : ""} value="${esc(person)}">${esc(person)}</option>`).join("");
+  }
+  function canManageAssignment() { return ["dispatcher", "manager", "admin"].includes(state.role); }
+  function renderSupportActions(ticket) {
+    const canWork = ["dispatcher", "specialist", "manager", "admin"].includes(state.role);
+    if (!canWork) return renderRequesterActions(ticket);
+    const ownershipGroups = [...new Set(["Unassigned", ...groups, ticket.group].filter(Boolean))];
+    const assignment = canManageAssignment() ? `<form class="action-section" id="assignmentForm"><h3>Ownership</h3><p class="action-hint">Reassignment is recorded in the ticket history.</p><div class="assignment-row"><label class="form-field"><span class="form-label">Support group</span><select name="group">${ownershipGroups.map(group => `<option ${ticket.group === group ? "selected" : ""}>${esc(group)}</option>`).join("")}</select></label><label class="form-field"><span class="form-label">Specialist</span><select name="assignee">${assigneeOptions(ticket.assignee)}</select></label><button class="btn" type="submit">Save assignment</button></div></form>` : "";
+    const statusOptions = ["New", "Assigned", "In progress", "Waiting", "Reopened"];
+    if (!statusOptions.includes(ticket.status)) statusOptions.push(ticket.status);
+    const statusForm = `<form class="action-section" id="statusForm"><h3>Update status</h3><p class="action-hint">Every status change is saved with its author and time.</p><div class="assignment-row"><label class="form-field"><span class="form-label">Next status</span><select name="status">${statusOptions.map(s => `<option ${ticket.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></label><label class="form-field"><span class="form-label">Reason for this update</span><input name="reason" type="text" placeholder="Optional context"></label><button class="btn" type="submit">Save status</button></div></form>`;
+    const workForm = `<form class="action-section" id="commentForm"><h3>Add an update</h3><p class="action-hint">Public replies are visible to the requester. Internal notes stay with support staff.</p><div class="comment-box"><label class="sr-only" for="commentText">Update or work note</label><textarea id="commentText" name="text" required maxlength="800" placeholder="Record what you checked, ask a question, or share the next step…"></textarea><div class="comment-options"><div class="inline-choice"><label><input type="radio" name="visibility" value="public"> Reply to requester</label><label><input type="radio" name="visibility" value="internal" checked> Internal work note</label></div><button class="btn btn-primary" type="submit">Save update</button></div></div></form>`;
+    const resolveForm = !["Resolved", "Closed"].includes(ticket.status) ? `<form class="action-section" id="resolveForm"><h3>Record a resolution</h3><p class="action-hint">A clear solution is required before the requester can close this ticket.</p><label class="form-field"><span class="form-label">Cause and solution</span><textarea name="resolution" required maxlength="700" placeholder="What caused the issue, and what fixed it?"></textarea></label><div class="form-actions"><button class="btn btn-accent" type="submit">Record resolution</button></div></form>` : "";
+    const escalateForm = `<details class="action-section"><summary class="btn btn-quiet">Escalate to the support manager</summary><form id="escalationForm" class="form-grid" style="margin-top:12px"><label class="form-field full"><span class="form-label">Reason for escalation</span><textarea name="reason" required maxlength="400" placeholder="Describe the impact, deadline risk, or specialist help needed."></textarea></label><label class="form-field"><span class="form-label">Send to</span><select name="group"><option>Support manager</option>${groups.map(g => `<option>${esc(g)}</option>`).join("")}</select></label><div class="form-field"><span class="form-label">&nbsp;</span><button class="btn btn-danger" type="submit">Escalate ticket</button></div></form></details>`;
+    return `${assignment}${statusForm}${workForm}${resolveForm}${escalateForm}`;
+  }
+  function renderRequesterActions(ticket) {
+    const isResolved = ticket.status === "Resolved";
+    const isClosed = ticket.status === "Closed";
+    const confirmation = isResolved ? `<div class="confirmation"><p><strong>Support recorded a solution.</strong> Review the result and confirm that the problem is fixed, or return the request to active work.</p><p class="action-hint">${esc(ticket.resolution || "No resolution details were provided.")}</p><div class="form-actions"><button class="btn btn-accent" type="button" data-action="confirm-solution">Confirm solution and close</button><button class="btn" type="button" data-action="reopen-ticket">It is still happening</button></div></div>` : "";
+    const closed = isClosed ? `<div class="confirmation"><p><strong>This request is closed.</strong> ${ticket.rating ? `Your feedback is saved: ${ticket.rating.score} out of 5.` : "Please rate the support you received."}</p>${ticket.rating ? "" : `<form id="ratingForm" class="rating-form"><fieldset class="form-field" style="border:0;padding:0;margin:0"><legend class="form-label">How was the support?</legend><div class="rating-scale">${[1,2,3,4,5].map(n => `<label><span>${n}</span><input type="radio" name="score" value="${n}" ${n === 5 ? "checked" : ""} aria-label="${n} out of 5"></label>`).join("")}</div></fieldset><label class="form-field" style="flex:1;min-width:180px"><span class="form-label">Optional comment</span><input type="text" name="comment" maxlength="280" placeholder="What worked well?"></label><button class="btn btn-primary" type="submit">Save rating</button></form>`}</div>` : "";
+    const canReply = !isClosed && !isResolved;
+    const reply = canReply ? `<form class="action-section" id="commentForm"><h3>Reply to support</h3><p class="action-hint">Your message becomes part of the ticket history. Do not include your password.</p><div class="comment-box"><label class="sr-only" for="commentText">Message to support</label><textarea id="commentText" name="text" required maxlength="800" placeholder="Add details or answer a support question…"></textarea><div class="comment-options"><span class="action-hint">Visible to your support team</span><button class="btn btn-primary" type="submit">Send reply</button></div></div></form>` : "";
+    const reopenClosed = isClosed ? `<div class="form-actions"><button class="btn" type="button" data-action="reopen-ticket">Reopen this request</button></div>` : "";
+    return `<div class="action-section"><h3>Requester actions</h3><p class="action-hint">Only your own requests appear in this view. Support work notes are private.</p>${confirmation}${closed}${reopenClosed}${reply}</div>`;
+  }
+  function renderDetail() {
+    const ticket = ticketById(state.selectedId) || getFilteredTickets()[0];
+    if (!ticket || (state.role === "requester" && ticket.requester !== roleUser())) return `<div class="detail-empty"><h2>Select a request</h2><p>Choose a ticket from the list to review its history and next steps.</p></div>`;
+    const canSee = state.role !== "requester" || ticket.requester === roleUser();
+    if (!canSee) return `<div class="detail-empty"><h2>Request unavailable</h2><p>This demonstration role can view only its own tickets.</p></div>`;
+    return `<button class="mobile-back" type="button" data-action="back-to-list">← Back to request list</button><div class="detail-topline"><div><div class="record-id"><span>${esc(ticket.id)}</span>${statusTag(ticket.status)}${priorityTag(ticket.priority)}</div><h2 class="detail-title" tabindex="-1">${esc(ticket.title)}</h2><p class="detail-summary">${esc(ticket.description)}</p></div><div class="detail-id-actions"><button class="icon-button" type="button" data-action="copy-id" aria-label="Copy ticket number" title="Copy ticket number">${icon("copy")}</button></div></div>${renderPhase(ticket)}${renderFields(ticket)}<section class="journal-section"><div class="section-title-row"><h3>Ticket journal</h3><span>${eventList(ticket).length} recorded updates</span></div>${renderTimeline(ticket)}</section>${renderSupportActions(ticket)}`;
+  }
+  function renderNewRequest() {
+    const isRequester = state.role === "requester";
+    return `<section class="page-form"><p class="form-intro">The ticket keeps the original request, its assignment history, support updates, resolution, and rating together. <strong>All entries in this workspace are sample data.</strong></p><div id="formError" hidden></div><form id="newTicketForm"><div class="form-grid"><label class="form-field"><span class="form-label">Requester name</span><input name="requester" type="text" required maxlength="80" value="${isRequester ? esc(roleUser()) : ""}" ${isRequester ? "readonly" : "placeholder=\"Name of the student or staff member\""}></label><label class="form-field"><span class="form-label">Category</span><select name="category" required>${state.categories.map(c => `<option>${esc(c)}</option>`).join("")}</select></label><label class="form-field full"><span class="form-label">Short description</span><input name="title" type="text" required maxlength="120" placeholder="For example, Wi-Fi keeps disconnecting in a teaching room"></label><label class="form-field full"><span class="form-label">What is happening?</span><textarea name="description" required maxlength="1200" placeholder="Include the affected service, where it happens, and what you have already tried."></textarea></label><fieldset class="form-field"><legend>Impact</legend><div class="choice-row"><label><input type="radio" name="impact" value="One person" checked> One person</label><label><input type="radio" name="impact" value="Several people"> Several people</label><label><input type="radio" name="impact" value="Teaching activity"> Teaching activity</label></div></fieldset><fieldset class="form-field"><legend>Urgency</legend><div class="choice-row"><label><input type="radio" name="urgency" value="Low"> Low</label><label><input type="radio" name="urgency" value="Normal" checked> Normal</label><label><input type="radio" name="urgency" value="Urgent"> Urgent</label></div></fieldset><div class="priority-preview" id="priorityPreview">Initial priority: <strong>Normal</strong> · target response within 24 hours</div><label class="form-field full"><span class="form-label">Attach a file (optional)</span><input class="file-input" id="attachmentInput" name="attachments" type="file" multiple><span class="file-note">This local demo records selected file names only. Nothing is uploaded.</span></label></div><div class="form-actions"><button class="btn btn-accent" type="submit">Submit request</button><button class="btn" type="button" data-page="queue">Cancel</button></div></form></section>`;
+  }
+  function ratingAverage(tickets) {
+    const ratings = tickets.map(t => t.rating?.score).filter(Number.isFinite);
+    return ratings.length ? (ratings.reduce((a,b) => a+b,0) / ratings.length).toFixed(1) : "—";
+  }
+  function renderInsights() {
+    const tickets = getRoleTickets();
+    const active = tickets.filter(t => t.status !== "Closed");
+    const late = active.filter(isLate);
+    const resolved = tickets.filter(t => ["Resolved", "Closed"].includes(t.status));
+    const rated = tickets.filter(t => t.rating);
+    const avg = ratingAverage(tickets);
+    const categoryRows = state.categories.map(category => {
+      const inCategory = tickets.filter(t => t.category === category);
+      const overdue = inCategory.filter(isLate).length;
+      const closed = inCategory.filter(t => t.status === "Closed").length;
+      return `<tr><td>${esc(category)}</td><td>${inCategory.length}</td><td>${overdue}</td><td>${closed}</td></tr>`;
+    }).join("");
+    const scores = [5,4,3,2,1].map(score => ({ score, count: rated.filter(t => t.rating.score === score).length }));
+    const max = Math.max(1, ...scores.map(row => row.count));
+    const lateList = late.length ? `<ul>${late.sort((a,b)=>new Date(a.dueAt)-new Date(b.dueAt)).slice(0,5).map(t => `<li><button type="button" data-open-ticket="${esc(t.id)}"><span><strong>${esc(t.id)}</strong> · ${esc(t.title)}</span><time>${esc(fmtRelative(t.dueAt))}</time></button></li>`).join("")}</ul>` : `<p class="action-hint">No open request is currently past its target in this view.</p>`;
+    return `<section class="report-surface"><div class="report-head"><h2>Queue and service quality</h2><p>Synthetic demonstration data · values update with ticket activity</p></div><dl class="report-strip"><div class="report-stat"><dt>Open work</dt><dd>${active.length}</dd><small>Across visible tickets</small></div><div class="report-stat"><dt>Past target</dt><dd>${late.length}</dd><small>Open tickets past SLA</small></div><div class="report-stat"><dt>Resolved or closed</dt><dd>${resolved.length}</dd><small>Current visible history</small></div><div class="report-stat"><dt>Average rating</dt><dd>${avg}</dd><small>${rated.length} requester ratings</small></div></dl><div class="report-columns"><section><h3>Requests by category</h3><table class="data-table"><caption class="sr-only">Ticket counts, overdue count and closed count by service category</caption><thead><tr><th>Service category</th><th>Total</th><th>Late</th><th>Closed</th></tr></thead><tbody>${categoryRows}</tbody></table><div class="late-list"><h3>Deadline watch</h3>${lateList}</div></section><section><h3>Requester feedback</h3><p class="action-hint">Ratings are saved after a requester closes a resolved ticket.</p><div class="bar-list">${scores.map(row => `<div class="bar-row"><span>${row.score} out of 5</span><div class="bar-track" aria-hidden="true"><div class="bar-fill" style="width:${Math.round(row.count/max*100)}%"></div></div><strong>${row.count}</strong></div>`).join("")}</div><div class="late-list"><h3>Service model</h3><p class="action-hint">Initial priority is derived from impact and urgency. Assignment, status, escalation, resolution and feedback remain connected to each ticket journal.</p></div></section></div></section>`;
+  }
+  function renderKnowledge() {
+    const q = (state.query || "").toLowerCase();
+    const filtered = knowledgeArticles.filter(a => !q || `${a.title} ${a.category} ${a.intro}`.toLowerCase().includes(q));
+    currentArticle = knowledgeArticles.find(a => a.id === state.articleId) || filtered[0] || knowledgeArticles[0];
+    const index = filtered.map(a => `<button class="article-link" type="button" data-article="${a.id}" aria-current="${a.id === currentArticle.id ? "true" : "false"}">${esc(a.title)}</button>`).join("") || `<p class="action-hint">No guides match your search.</p>`;
+    const article = `<article class="knowledge-article"><div class="record-id"><span>${esc(currentArticle.category)}</span><span>·</span><span>${esc(currentArticle.updated)}</span></div><h2>${esc(currentArticle.title)}</h2><p>${esc(currentArticle.intro)}</p><h3>Try these steps</h3><ol>${currentArticle.steps.map(step => `<li>${esc(step)}</li>`).join("")}</ol><p>If these steps do not help, open a support request and include the details listed above. Never include your password or recovery codes in a ticket.</p><div class="article-feedback"><span>Was this guide useful?</span><button class="btn btn-quiet" type="button" data-action="article-feedback" data-value="yes">Yes</button><button class="btn btn-quiet" type="button" data-action="article-feedback" data-value="no">Not yet</button></div></article>`;
+    return `<section class="knowledge-layout"><div class="knowledge-index"><h2>Guides</h2><label class="sr-only" for="knowledgeSearch">Search guides</label><input id="knowledgeSearch" type="search" placeholder="Search the guides" value="${esc(state.query)}"><nav aria-label="Knowledge articles">${index}</nav></div>${article}</section>`;
+  }
+  function renderSettings() {
+    if (state.role !== "admin") return `<section class="page-form"><h2>Settings are limited to the administrator demonstration role.</h2><p>Switch roles in the header to review sample service settings.</p></section>`;
+    const list = state.categories.map(category => {
+      const count = state.tickets.filter(t => t.category === category).length;
+      return `<li class="category-row"><span>${esc(category)} <small>${count} tickets</small></span><button class="btn btn-quiet" type="button" data-delete-category="${esc(category)}" ${count ? "disabled title=\"Category is used by sample tickets\"" : ""}>Remove</button></li>`;
+    }).join("");
+    return `<section class="settings-layout"><section class="settings-section"><h3>Service categories</h3><p>Categories help dispatchers send a request to a support group. Existing sample tickets keep their original category.</p><ul class="category-list">${list}</ul><form id="categoryForm" class="mini-form"><label class="form-field"><span class="form-label">Add a category</span><input name="category" type="text" required maxlength="50" placeholder="For example, Printing support"></label><button class="btn btn-primary" type="submit">Add</button></form></section><section class="settings-section"><h3>Routing and service standards</h3><p>Demonstration defaults only. No real accounts, calendar, email, or notification service is connected.</p><div class="preference-line"><div><strong>Network services</strong><span>Wireless, VPN, and connectivity</span></div><span>Samira Okafor</span></div><div class="preference-line"><div><strong>Classroom technology</strong><span>Teaching room and recording equipment</span></div><span>Noah Williams</span></div><div class="preference-line"><div><strong>Critical target</strong><span>High impact and urgent</span></div><span>4 hours</span></div><div class="preference-line"><div><strong>Normal target</strong><span>Standard impact and urgency</span></div><span>24 hours</span></div><div class="preference-line"><div><strong>Role access</strong><span>Simulated by the role selector</span></div><span>5 roles</span></div></section></section>`;
+  }
+  function visibleNotifications() {
+    return state.notifications.filter(notification => {
+      const ticket = ticketById(notification.ticketId);
+      if (!ticket) return false;
+      if (state.role === "requester") {
+        if (notification.audience === "support" || ticket.requester !== roleUser()) return false;
+        const internalText = (ticket.comments || []).some(note => note.visibility === "internal" && notification.body === String(note.text || "").slice(0, 100));
+        return !internalText;
+      }
+      if (notification.audience === "requester") return false;
+      if (state.role === "specialist") return ticket.assignee === roleUser();
+      return true;
+    });
+  }
+  function renderNotifications() {
+    const visible = visibleNotifications();
+    const notifications = [...visible].sort((a,b)=>new Date(b.at)-new Date(a.at)).slice(0,8);
+    const unread = visible.filter(n => !n.read).length;
+    $("#unreadDot").hidden = unread === 0;
+    if (!notifications.length) return `<div class="notification-head"><h2>Notifications</h2></div><p class="notification-empty">You are all caught up.</p>`;
+    return `<div class="notification-head"><h2>Notifications</h2><button type="button" data-action="mark-notifications">Mark all read</button></div><div class="notification-list">${notifications.map(n => `<button class="notification-item" type="button" data-notification="${esc(n.id)}" data-open-ticket="${esc(n.ticketId)}"><strong>${esc(n.title)}${n.read ? "" : " · New"}</strong><span>${esc(n.body)} · ${esc(fmtDate(n.at,{hour:"numeric",minute:"2-digit"}))}</span></button>`).join("")}</div>`;
+  }
+  function renderApp() {
+    const viewHadFocus = root.contains(document.activeElement);
+    if (!navItems().some(item => item.id === state.page) && !["new"].includes(state.page)) state.page = navItems()[0]?.id || "queue";
+    if (state.role === "requester" && state.page === "queue" && !getRoleTickets().some(t => t.id === state.selectedId)) state.selectedId = getRoleTickets()[0]?.id || null;
+    $("#roleSelect").value = state.role;
+    $("#profileName").textContent = roleUser();
+    $("#profileRole").textContent = `${roleNames[state.role]} · demo role`;
+    $("#profileAvatar").textContent = roleUser().split(" ").map(name => name[0]).join("");
+    renderNav();
+    let content = "";
+    if (state.page === "queue") content = renderQueue();
+    else if (state.page === "new") content = renderNewRequest();
+    else if (state.page === "insights") content = renderInsights();
+    else if (state.page === "knowledge") content = renderKnowledge();
+    else if (state.page === "settings") content = renderSettings();
+    root.innerHTML = `${renderPageHead()}${content}`;
+    if (state.page === "queue") updateQueueCount();
+    $("#notificationPanel").innerHTML = renderNotifications();
+    $("#notificationPanel").hidden = !$("#notificationsButton").getAttribute("aria-expanded").includes("true");
+    if (viewHadFocus) {
+      const target = state.page === "queue" ? $(".detail-title", root) || $("h1", root) : $("h1", root);
+      target?.focus({ preventScroll: true });
+    }
+  }
+  function updateQueueCount() {
+    const total = $("#queueTotal");
+    if (!total) return;
+    const count = getFilteredTickets().length;
+    total.textContent = `${count} ${count === 1 ? "record" : "records"}`;
+  }
+  function refreshTicketList() {
+    const list = $("#ticketList");
+    if (list) list.innerHTML = renderTicketRows();
+    updateQueueCount();
+  }
+  function showToast(message, type = "success") {
+    const region = $("#toastRegion");
+    const toast = document.createElement("div");
+    toast.className = `toast ${type === "error" ? "is-error" : ""}`;
+    toast.setAttribute("role", type === "error" ? "alert" : "status");
+    toast.textContent = message;
+    region.replaceChildren(toast);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.remove(), 3600);
+  }
+  function addNotification(ticket, title, body, audience = "all") {
+    state.notifications.push({ id: `n-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, ticketId: ticket.id, title, body: body || ticket.title, audience, at: new Date().toISOString(), read: false });
+  }
+  function addHistory(ticket, text, kind = "history", actor = roleUser()) {
+    const event = { kind, actor, at: new Date().toISOString(), text };
+    if (kind === "comment" || kind === "internal") ticket.comments.push({ ...event, visibility: kind === "internal" ? "internal" : "public" });
+    else ticket.history.push(event);
+    return event;
+  }
+  function navigate(page) {
+    state.page = page;
+    mobileDetail = false;
+    persist();
+    renderApp();
+    $("#mainContent").focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function chooseTicket(id) {
+    const ticket = ticketById(id);
+    if (!ticket) return;
+    if (state.role === "requester" && ticket.requester !== roleUser()) return;
+    state.selectedId = id;
+    if (state.page === "insights") state.page = "queue";
+    mobileDetail = true;
+    persist();
+    renderApp();
+    $(".detail-title", root)?.focus({ preventScroll: true });
+    if (window.matchMedia("(max-width: 760px)").matches) $("#detailPanel")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+  function derivePriority(impact, urgency) {
+    const impactScore = impact === "Teaching activity" ? 3 : impact === "Several people" ? 2 : 1;
+    const urgencyScore = urgency === "Urgent" ? 3 : urgency === "Normal" ? 2 : 1;
+    const score = impactScore + urgencyScore;
+    return score >= 5 ? "Critical" : score === 4 ? "High" : score === 3 ? "Normal" : "Low";
+  }
+  function slaHours(priority) { return priority === "Critical" ? 4 : priority === "High" ? 8 : priority === "Normal" ? 24 : 48; }
+  function priorityPreview() {
+    const form = $("#newTicketForm");
+    if (!form) return;
+    const data = new FormData(form);
+    const priority = derivePriority(data.get("impact"), data.get("urgency"));
+    const hours = slaHours(priority);
+    $("#priorityPreview").innerHTML = `Initial priority: <strong>${priority}</strong> · target response within ${hours} ${hours === 1 ? "hour" : "hours"}`;
+  }
+  function handleNewTicket(form) {
+    const data = new FormData(form);
+    const title = String(data.get("title") || "").trim();
+    const description = String(data.get("description") || "").trim();
+    const requester = String(data.get("requester") || "").trim();
+    if (!title || !description || !requester) return showToast("Add a requester, short description, and issue details before submitting.", "error");
+    const impact = String(data.get("impact"));
+    const urgency = String(data.get("urgency"));
+    const priority = derivePriority(impact, urgency);
+    const nextNumber = Math.max(2048, ...state.tickets.map(t => Number(t.id.replace(/\D/g, "")) || 0)) + 1;
+    const id = `HD-${nextNumber}`;
+    const files = Array.from($("#attachmentInput")?.files || []).map(file => file.name);
+    const ticket = makeTicket({ id, title, description, category: String(data.get("category")), impact, urgency, priority, status: "New", requester, group: "Unassigned", assignee: "Unassigned", createdAt: new Date().toISOString(), dueAt: iso(slaHours(priority)), attachments: files, history: [{ kind: "history", actor: requester, at: new Date().toISOString(), text: "Request received. The service desk will review the details." }], comments: [] });
+    state.tickets.unshift(ticket);
+    addNotification(ticket, "New request received", `${id} · ${title}`, state.role === "requester" ? "support" : "all");
+    state.selectedId = id;
+    state.page = "queue";
+    mobileDetail = true;
+    persist(); renderApp();
+    showToast(`Request ${id} has been registered. The service desk can now assign it.`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function handleComment(form) {
+    const data = new FormData(form);
+    const text = String(data.get("text") || "").trim();
+    const ticket = ticketById(state.selectedId);
+    if (!ticket || !text) return;
+    const visibility = state.role === "requester" ? "public" : String(data.get("visibility") || "internal");
+    if (state.role === "requester" && ticket.status === "Waiting") {
+      ticket.status = "In progress";
+      addHistory(ticket, "Requester replied; work returned to In progress.");
+    }
+    addHistory(ticket, text, visibility === "internal" ? "internal" : "comment");
+    if (state.role === "requester") addNotification(ticket, "Requester added a reply", text.slice(0, 100), "support");
+    else if (visibility === "public") addNotification(ticket, "Support sent an update", text.slice(0, 100), "requester");
+    else addNotification(ticket, "A work note was added", ticket.title, "support");
+    persist(); renderApp(); showToast(visibility === "internal" ? "Work note saved to the support journal." : "Reply added to the ticket journal.");
+  }
+  function handleAssignment(form) {
+    const ticket = ticketById(state.selectedId);
+    if (!ticket) return;
+    const data = new FormData(form);
+    const group = String(data.get("group"));
+    const assignee = String(data.get("assignee"));
+    const changed = ticket.group !== group || ticket.assignee !== assignee;
+    if (!changed) return showToast("The current ownership is already up to date.");
+    const old = `${ticket.group || "Unassigned"} / ${ticket.assignee || "Unassigned"}`;
+    ticket.group = group; ticket.assignee = assignee;
+    if (ticket.status === "New") ticket.status = "Assigned";
+    addHistory(ticket, `Reassigned from ${old} to ${group} / ${assignee}.`);
+    addNotification(ticket, "Ticket assignment changed", `${ticket.id} is now assigned to ${assignee}.`);
+    persist(); renderApp(); showToast(`Assignment saved for ${ticket.id}.`);
+  }
+  function handleStatus(form) {
+    const ticket = ticketById(state.selectedId);
+    if (!ticket) return;
+    const data = new FormData(form);
+    const next = String(data.get("status"));
+    const reason = String(data.get("reason") || "").trim();
+    if (next === "Resolved" || next === "Closed") return showToast("Use the resolution or requester confirmation action to complete this ticket.", "error");
+    if (ticket.status === next && !reason) return showToast("Choose a different status or add a reason for the journal.");
+    const previous = ticket.status;
+    ticket.status = next;
+    addHistory(ticket, `Status changed from ${previous} to ${next}.${reason ? ` Reason: ${reason}` : ""}`);
+    addNotification(ticket, `Ticket moved to ${next}`, ticket.title);
+    persist(); renderApp(); showToast(`${ticket.id} is now ${next}.`);
+  }
+  function handleResolution(form) {
+    const ticket = ticketById(state.selectedId);
+    if (!ticket) return;
+    const text = String(new FormData(form).get("resolution") || "").trim();
+    if (!text) return showToast("Describe the cause and solution before recording a resolution.", "error");
+    ticket.resolution = text;
+    ticket.status = "Resolved";
+    addHistory(ticket, text, "resolution");
+    addNotification(ticket, "Resolution awaiting confirmation", ticket.title);
+    persist(); renderApp(); showToast("Resolution recorded. The requester can confirm it or reopen the ticket.");
+  }
+  function handleEscalation(form) {
+    const ticket = ticketById(state.selectedId);
+    if (!ticket) return;
+    const data = new FormData(form);
+    const reason = String(data.get("reason") || "").trim();
+    const target = String(data.get("group") || "Support manager");
+    if (!reason) return showToast("Add an escalation reason so the handoff is clear.", "error");
+    ticket.status = "Escalated";
+    ticket.group = target;
+    if (target === "Support manager") ticket.assignee = "Arun Shah";
+    addHistory(ticket, `Escalated to ${target}. Reason: ${reason}`, "escalation");
+    addNotification(ticket, "Ticket escalated", `${ticket.id} · ${ticket.title}`);
+    persist(); renderApp(); showToast(`${ticket.id} was escalated and its reason was recorded.`);
+  }
+  function reopenTicket(ticket) {
+    if (!ticket) return;
+    const previous = ticket.status;
+    ticket.status = "Reopened";
+    ticket.closedAt = null;
+    ticket.rating = null;
+    addHistory(ticket, `Requester returned the issue to active work from ${previous}.`);
+    addNotification(ticket, "Request reopened", ticket.title);
+    persist(); renderApp(); showToast("Request reopened and returned to the support queue.");
+  }
+  function handleRating(form) {
+    const ticket = ticketById(state.selectedId);
+    if (!ticket || ticket.status !== "Closed") return;
+    const data = new FormData(form);
+    const score = Number(data.get("score"));
+    if (score < 1 || score > 5) return showToast("Choose a rating from 1 to 5.", "error");
+    ticket.rating = { score, comment: String(data.get("comment") || "").trim(), at: new Date().toISOString() };
+    addHistory(ticket, `Requester saved a ${score} out of 5 service rating${ticket.rating.comment ? `: ${ticket.rating.comment}` : "."}`);
+    persist(); renderApp(); showToast("Thank you. Your rating is saved with the ticket.");
+  }
+  function handleCategory(form) {
+    const category = String(new FormData(form).get("category") || "").trim();
+    if (!category) return;
+    if (state.categories.some(value => value.toLowerCase() === category.toLowerCase())) return showToast("That category already exists.", "error");
+    state.categories.push(category);
+    state.categories.sort((a,b)=>a.localeCompare(b));
+    persist(); renderApp(); showToast(`“${category}” was added to the service categories.`);
+  }
+  function markAllNotifications() {
+    visibleNotifications().forEach(n => n.read = true);
+    persist(); renderApp();
+    $("#notificationPanel [data-action=\"mark-notifications\"]")?.focus({ preventScroll: true });
+  }
+  function handleClick(event) {
+    const pageButton = event.target.closest("[data-page]");
+    if (pageButton) { navigate(pageButton.dataset.page); return; }
+    const ticketButton = event.target.closest("[data-open-ticket]");
+    if (ticketButton) {
+      const notificationId = ticketButton.dataset.notification;
+      if (notificationId) { const n = state.notifications.find(item => item.id === notificationId); if (n) n.read = true; }
+      $("#notificationPanel").hidden = true; $("#notificationsButton").setAttribute("aria-expanded", "false");
+      chooseTicket(ticketButton.dataset.openTicket); return;
+    }
+    const articleButton = event.target.closest("[data-article]");
+    if (articleButton) { state.articleId = articleButton.dataset.article; persist(); renderApp(); return; }
+    const deleteButton = event.target.closest("[data-delete-category]");
+    if (deleteButton) {
+      const category = deleteButton.dataset.deleteCategory;
+      if (state.tickets.some(t => t.category === category)) return showToast("This category is still used by a ticket.", "error");
+      state.categories = state.categories.filter(c => c !== category); persist(); renderApp(); showToast("Category removed."); return;
+    }
+    const actionTarget = event.target.closest("[data-action]");
+    const action = actionTarget?.dataset.action;
+    if (action === "back-to-list") {
+      mobileDetail = false;
+      $(".workbench")?.classList.remove("is-detail");
+      const selectedRow = $$(".ticket-row").find(row => row.dataset.openTicket === state.selectedId);
+      const queueHeading = $(".queue-heading h2");
+      if (!selectedRow && queueHeading) queueHeading.tabIndex = -1;
+      (selectedRow || queueHeading)?.focus();
+      return;
+    }
+    if (action === "copy-id") {
+      const ticket = ticketById(state.selectedId);
+      if (ticket && navigator.clipboard?.writeText) navigator.clipboard.writeText(ticket.id).then(() => showToast(`${ticket.id} copied.`)).catch(() => showToast(`Ticket number: ${ticket.id}`));
+      else if (ticket) showToast(`Ticket number: ${ticket.id}`);
+      return;
+    }
+    if (action === "confirm-solution") {
+      const ticket = ticketById(state.selectedId);
+      if (!ticket?.resolution?.trim()) return showToast("Support needs to record a solution before this request can close.", "error");
+      ticket.status = "Closed"; ticket.closedAt = new Date().toISOString();
+      addHistory(ticket, "Requester confirmed the solution. Ticket closed.");
+      addNotification(ticket, "Ticket closed", ticket.title);
+      persist(); renderApp(); showToast("Solution confirmed. You can now leave a service rating."); return;
+    }
+    if (action === "reopen-ticket") { reopenTicket(ticketById(state.selectedId)); return; }
+    if (action === "mark-notifications") { markAllNotifications(); return; }
+    if (action === "article-feedback") { showToast(actionTarget.dataset.value === "no" ? "Thanks. This guide has been marked for review." : "Thanks for confirming this guide was useful."); return; }
+  }
+  root.addEventListener("click", handleClick);
+  root.addEventListener("submit", event => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    event.preventDefault();
+    if (form.id === "newTicketForm") handleNewTicket(form);
+    else if (form.id === "assignmentForm") handleAssignment(form);
+    else if (form.id === "statusForm") handleStatus(form);
+    else if (form.id === "resolveForm") handleResolution(form);
+    else if (form.id === "escalationForm") handleEscalation(form);
+    else if (form.id === "commentForm") handleComment(form);
+    else if (form.id === "ratingForm") handleRating(form);
+    else if (form.id === "categoryForm") handleCategory(form);
+  });
+  root.addEventListener("input", event => {
+    if (event.target.id === "searchInput") {
+      state.query = event.target.value;
+      refreshTicketList();
+    } else if (event.target.id === "knowledgeSearch") {
+      state.query = event.target.value;
+      const active = document.activeElement;
+      const start = active.selectionStart;
+      const end = active.selectionEnd;
+      const scroll = $(".knowledge-index nav")?.scrollLeft || 0;
+      renderApp();
+      const next = $("#knowledgeSearch"); next?.focus(); next?.setSelectionRange(start, end);
+      const nav = $(".knowledge-index nav"); if (nav) nav.scrollLeft = scroll;
+    } else if (["impact", "urgency"].includes(event.target.name)) priorityPreview();
+  });
+  root.addEventListener("change", event => {
+    if (event.target.id === "statusFilter") { state.statusFilter = event.target.value; refreshTicketList(); }
+    if (event.target.id === "categoryFilter") { state.categoryFilter = event.target.value; refreshTicketList(); }
+    if (event.target.id === "priorityFilter") { state.priorityFilter = event.target.value; refreshTicketList(); }
+    if (event.target.name === "impact" || event.target.name === "urgency") priorityPreview();
+  });
+  $("#sideNav").addEventListener("click", event => {
+    const button = event.target.closest("[data-page]"); if (button) navigate(button.dataset.page);
+  });
+  $("#notificationPanel").addEventListener("click", event => {
+    if (event.target.closest('[data-action="mark-notifications"]')) { markAllNotifications(); return; }
+    const notification = event.target.closest("[data-notification]");
+    const ticketButton = event.target.closest("[data-open-ticket]");
+    if (notification) {
+      const item = state.notifications.find(n => n.id === notification.dataset.notification);
+      if (item) item.read = true;
+    }
+    if (ticketButton) {
+      $("#notificationPanel").hidden = true;
+      $("#notificationsButton").setAttribute("aria-expanded", "false");
+      chooseTicket(ticketButton.dataset.openTicket);
+    } else if (notification) {
+      persist(); renderApp();
+    }
+  });
+  $("#roleSelect").addEventListener("change", event => {
+    state.role = event.target.value;
+    state.page = "queue";
+    state.query = ""; state.statusFilter = "all"; state.categoryFilter = "all"; state.priorityFilter = "all";
+    const visible = getRoleTickets();
+    if (!visible.some(t => t.id === state.selectedId)) state.selectedId = visible[0]?.id || null;
+    mobileDetail = false;
+    persist(); renderApp();
+    showToast(`${roleNames[state.role]} view is active. This selector simulates role access.`);
+  });
+  $("#newRequestButton").addEventListener("click", () => navigate("new"));
+  $("#notificationsButton").addEventListener("click", () => {
+    const button = $("#notificationsButton");
+    const open = button.getAttribute("aria-expanded") === "true";
+    button.setAttribute("aria-expanded", String(!open));
+    $("#notificationPanel").hidden = open;
+    if (!open) { $("#notificationPanel").innerHTML = renderNotifications(); $("#notificationPanel").querySelector("button")?.focus(); }
+  });
+  $("#resetDemo").addEventListener("click", () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+    state = initialState(); mobileDetail = false; renderApp(); showToast("Demonstration data reset to the original sample tickets.");
+  });
+  document.addEventListener("click", event => {
+    if (!event.target.closest("#notificationPanel") && !event.target.closest("#notificationsButton")) {
+      $("#notificationPanel").hidden = true;
+      $("#notificationsButton").setAttribute("aria-expanded", "false");
+    }
+  });
+  renderApp();
+})();
+</script>
+</body>
+</html>
